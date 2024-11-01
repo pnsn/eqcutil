@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eqcorrscan_utils"
+version = "0.0.0"
+authors = [{name="Nathan T. Stevens", email="ntsteven@uw.edu"},
+           {name="Barrett Johnson", email="bnjo@uw.edu"}]
+requires-python = ">=3.9"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: GNUv3 :: GNU General Public License v3",
+    "Operating System :: Agnostic",
+    "Development Status :: 3 - Alpha"
+]
+dependencies = [
+    "cython",
+    "numpy<2",
+    "obspy",
+    "pandas",
+    "obsplus",
+    "pyrocko",
+    "ipython",
+    "pytest",
+    "pyqt",
+    "pyqtwebengine
+]
+
+[tool.setuptools.packages.find]
+include = ["methods","classes"]
+
+[project.urls]
+GitHub = "https://github.com/pnsn/eqcorrscan_utils"
+PNSN = "https://pnsn.org"
