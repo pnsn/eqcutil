@@ -1,0 +1,908 @@
+<?xml version='1.0' encoding='utf-8'?>
+<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns:ns0="http://anss.org/xmlns/catalog/0.1">
+  <eventParameters publicID="smi:local/1b1d72b9-618b-4a9a-8aa7-faf63615b506">
+    <event publicID="quakeml:uw.anss.org/Event/UW/10258848" ns0:datasource="uw" ns0:dataid="uw10258848" ns0:eventsource="uw" ns0:eventid="10258848">
+      <preferredOriginID>quakeml:uw.anss.org/Origin/UW/535793</preferredOriginID>
+      <preferredMagnitudeID>quakeml:uw.anss.org/Netmag/UW/448293</preferredMagnitudeID>
+      <type>earthquake</type>
+      <creationInfo>
+        <agencyID>UW</agencyID>
+        <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        <version>3</version>
+      </creationInfo>
+      <origin publicID="quakeml:uw.anss.org/Origin/UW/535793" ns0:datasource="uw" ns0:dataid="uw10258848" ns0:eventsource="uw" ns0:eventid="10258848">
+        <time>
+          <value>1990-04-15T02:13:11.890000Z</value>
+          <uncertainty>5.47</uncertainty>
+        </time>
+        <latitude>
+          <value>48.8101667</value>
+          <uncertainty>2.02</uncertainty>
+        </latitude>
+        <longitude>
+          <value>-122.2008333</value>
+          <uncertainty>1.61</uncertainty>
+        </longitude>
+        <depth>
+          <value>4781.0</value>
+          <uncertainty>52270.0</uncertainty>
+        </depth>
+        <depthType>operator assigned</depthType>
+        <timeFixed>false</timeFixed>
+        <epicenterFixed>true</epicenterFixed>
+        <methodID>smi:uw.anss.org/origin/spong</methodID>
+        <quality>
+          <associatedPhaseCount>29</associatedPhaseCount>
+          <usedPhaseCount>16</usedPhaseCount>
+          <associatedStationCount>23</associatedStationCount>
+          <usedStationCount>0</usedStationCount>
+          <standardError>0.32</standardError>
+          <azimuthalGap>80.0</azimuthalGap>
+        </quality>
+        <type>hypocenter</type>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+        <originUncertainty>
+          <preferredDescription>horizontal uncertainty</preferredDescription>
+          <horizontalUncertainty>2583.0</horizontalUncertainty>
+        </originUncertainty>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841943">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841943</pickID>
+          <phase>P</phase>
+          <azimuth>206.4</azimuth>
+          <distance>1.296</distance>
+          <timeResidual>0.41</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841948">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841948</pickID>
+          <phase>S</phase>
+          <azimuth>206.4</azimuth>
+          <distance>1.296</distance>
+          <timeResidual>0.85</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841953">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841953</pickID>
+          <phase>P</phase>
+          <azimuth>332.0</azimuth>
+          <timeResidual>-0.5</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841958">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841958</pickID>
+          <phase>P</phase>
+          <timeResidual>0.0</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841963">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841963</pickID>
+          <phase>P</phase>
+          <azimuth>172.1</azimuth>
+          <distance>0.3906</distance>
+          <timeResidual>-0.55</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841968">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841968</pickID>
+          <phase>S</phase>
+          <azimuth>172.1</azimuth>
+          <distance>0.3906</distance>
+          <timeResidual>1.52</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841973">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841973</pickID>
+          <phase>P</phase>
+          <azimuth>170.3</azimuth>
+          <timeResidual>0.49</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841978">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841978</pickID>
+          <phase>S</phase>
+          <azimuth>170.3</azimuth>
+          <timeResidual>0.76</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841983">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841983</pickID>
+          <phase>P</phase>
+          <azimuth>175.3</azimuth>
+          <distance>1.874</distance>
+          <timeResidual>0.54</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841988">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841988</pickID>
+          <phase>P</phase>
+          <timeResidual>0.15</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841993">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841993</pickID>
+          <phase>P</phase>
+          <azimuth>128.3</azimuth>
+          <distance>0.5817</distance>
+          <timeResidual>-0.22</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3841998">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3841998</pickID>
+          <phase>S</phase>
+          <azimuth>128.3</azimuth>
+          <distance>0.5817</distance>
+          <timeResidual>0.79</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842003">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842003</pickID>
+          <phase>P</phase>
+          <azimuth>310.1</azimuth>
+          <timeResidual>-0.65</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842008">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842008</pickID>
+          <phase>P</phase>
+          <azimuth>204.4</azimuth>
+          <distance>0.535</distance>
+          <timeResidual>0.78</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842013">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842013</pickID>
+          <phase>P</phase>
+          <azimuth>225.8</azimuth>
+          <distance>1.413</distance>
+          <timeResidual>0.36</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842018">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842018</pickID>
+          <phase>P</phase>
+          <azimuth>322.2</azimuth>
+          <timeResidual>-0.47</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842023">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842023</pickID>
+          <phase>P</phase>
+          <azimuth>163.5</azimuth>
+          <timeResidual>-0.2</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842028">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842028</pickID>
+          <phase>S</phase>
+          <azimuth>163.5</azimuth>
+          <timeResidual>2.28</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842033">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842033</pickID>
+          <phase>P</phase>
+          <azimuth>149.4</azimuth>
+          <distance>2.197</distance>
+          <timeResidual>1.04</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842038">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842038</pickID>
+          <phase>P</phase>
+          <azimuth>169.0</azimuth>
+          <timeResidual>0.6</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842043">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842043</pickID>
+          <phase>P</phase>
+          <timeResidual>-0.03</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842048">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842048</pickID>
+          <phase>S</phase>
+          <timeResidual>-0.41</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842053">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842053</pickID>
+          <phase>P</phase>
+          <azimuth>236.5</azimuth>
+          <timeResidual>0.01</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842058">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842058</pickID>
+          <phase>P</phase>
+          <azimuth>197.4</azimuth>
+          <distance>1.323</distance>
+          <timeResidual>0.29</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842063">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842063</pickID>
+          <phase>P</phase>
+          <azimuth>97.5</azimuth>
+          <distance>0.2001</distance>
+          <timeResidual>-0.09</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842068">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842068</pickID>
+          <phase>P</phase>
+          <timeResidual>0.1</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842073">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842073</pickID>
+          <phase>P</phase>
+          <azimuth>163.9</azimuth>
+          <distance>1.048</distance>
+          <timeResidual>0.98</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842078">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842078</pickID>
+          <phase>P</phase>
+          <azimuth>252.8</azimuth>
+          <distance>0.4383</distance>
+          <timeResidual>-0.05</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="quakeml:uw.anss.org/AssocArO/UW/3842083">
+          <pickID>quakeml:uw.anss.org/Arrival/UW/3842083</pickID>
+          <phase>P</phase>
+          <azimuth>173.4</azimuth>
+          <distance>0.9812</distance>
+          <timeResidual>1.5</timeResidual>
+          <creationInfo>
+            <agencyID>UW</agencyID>
+            <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+          </creationInfo>
+        </arrival>
+      </origin>
+      <magnitude publicID="quakeml:uw.anss.org/Netmag/UW/448293">
+        <mag>
+          <value>2.1</value>
+          <uncertainty>0.08</uncertainty>
+        </mag>
+        <type>Md</type>
+        <originID>quakeml:uw.anss.org/Origin/UW/535793</originID>
+        <methodID>smi:uw.anss.org/magnitude/Crosson</methodID>
+        <stationCount>5</stationCount>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <stationMagnitudeContribution>
+          <stationMagnitudeID>quakeml:uw.anss.org/AssocCoM/UW/1100418</stationMagnitudeID>
+          <weight>1.0</weight>
+          <residual>0.1</residual>
+        </stationMagnitudeContribution>
+        <stationMagnitudeContribution>
+          <stationMagnitudeID>quakeml:uw.anss.org/AssocCoM/UW/1100428</stationMagnitudeID>
+          <weight>1.0</weight>
+          <residual>-0.39</residual>
+        </stationMagnitudeContribution>
+        <stationMagnitudeContribution>
+          <stationMagnitudeID>quakeml:uw.anss.org/AssocCoM/UW/1100408</stationMagnitudeID>
+          <weight>1.0</weight>
+          <residual>0.18</residual>
+        </stationMagnitudeContribution>
+        <stationMagnitudeContribution>
+          <stationMagnitudeID>quakeml:uw.anss.org/AssocCoM/UW/1100413</stationMagnitudeID>
+          <weight>1.0</weight>
+          <residual>0.07</residual>
+        </stationMagnitudeContribution>
+        <stationMagnitudeContribution>
+          <stationMagnitudeID>quakeml:uw.anss.org/AssocCoM/UW/1100423</stationMagnitudeID>
+          <weight>1.0</weight>
+          <residual>-0.04</residual>
+        </stationMagnitudeContribution>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </magnitude>
+      <stationMagnitude publicID="quakeml:uw.anss.org/AssocCoM/UW/1100408">
+        <originID>quakeml:uw.anss.org/Origin/UW/535793</originID>
+        <mag>
+          <value>2.28</value>
+        </mag>
+        <type>MD</type>
+        <amplitudeID>quakeml:uw.anss.org/Coda/UW/1100408</amplitudeID>
+        <waveformID networkCode="UW" stationCode="HDW" locationCode="" channelCode="EHZ"></waveformID>
+      </stationMagnitude>
+      <stationMagnitude publicID="quakeml:uw.anss.org/AssocCoM/UW/1100413">
+        <originID>quakeml:uw.anss.org/Origin/UW/535793</originID>
+        <mag>
+          <value>2.17</value>
+        </mag>
+        <type>MD</type>
+        <amplitudeID>quakeml:uw.anss.org/Coda/UW/1100413</amplitudeID>
+        <waveformID networkCode="UW" stationCode="CMW" locationCode="" channelCode="EHZ"></waveformID>
+      </stationMagnitude>
+      <stationMagnitude publicID="quakeml:uw.anss.org/AssocCoM/UW/1100418">
+        <originID>quakeml:uw.anss.org/Origin/UW/535793</originID>
+        <mag>
+          <value>2.2</value>
+        </mag>
+        <type>MD</type>
+        <amplitudeID>quakeml:uw.anss.org/Coda/UW/1100418</amplitudeID>
+        <waveformID networkCode="UW" stationCode="RPW" locationCode="" channelCode="EHZ"></waveformID>
+      </stationMagnitude>
+      <stationMagnitude publicID="quakeml:uw.anss.org/AssocCoM/UW/1100423">
+        <originID>quakeml:uw.anss.org/Origin/UW/535793</originID>
+        <mag>
+          <value>2.06</value>
+        </mag>
+        <type>MD</type>
+        <amplitudeID>quakeml:uw.anss.org/Coda/UW/1100423</amplitudeID>
+        <waveformID networkCode="UW" stationCode="JCW" locationCode="" channelCode="EHZ"></waveformID>
+      </stationMagnitude>
+      <stationMagnitude publicID="quakeml:uw.anss.org/AssocCoM/UW/1100428">
+        <originID>quakeml:uw.anss.org/Origin/UW/535793</originID>
+        <mag>
+          <value>1.71</value>
+        </mag>
+        <type>MD</type>
+        <amplitudeID>quakeml:uw.anss.org/Coda/UW/1100428</amplitudeID>
+        <waveformID networkCode="UW" stationCode="MBW" locationCode="" channelCode="EHZ"></waveformID>
+      </stationMagnitude>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841943">
+        <time>
+          <value>1990-04-15T02:13:34.790000Z</value>
+          <uncertainty>0.07</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="HDW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841948">
+        <time>
+          <value>1990-04-15T02:13:52.760000Z</value>
+          <uncertainty>0.06</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="HDW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841953">
+        <time>
+          <value>1990-04-15T02:13:20.850000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="HNB" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>negative</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841958">
+        <time>
+          <value>1990-04-15T02:13:16.230000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="VDB" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>negative</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841963">
+        <time>
+          <value>1990-04-15T02:13:18.840000Z</value>
+          <uncertainty>0.03</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="CMW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841968">
+        <time>
+          <value>1990-04-15T02:13:26.760000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="CMW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841973">
+        <time>
+          <value>1990-04-15T02:13:40.790000Z</value>
+          <uncertainty>0.11</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="GSM" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841978">
+        <time>
+          <value>1990-04-15T02:14:03.220000Z</value>
+          <uncertainty>0.09</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="GSM" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841983">
+        <time>
+          <value>1990-04-15T02:13:44.730000Z</value>
+          <uncertainty>0.14</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="RVC" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841988">
+        <time>
+          <value>1990-04-15T02:13:26.450000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="PGC" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841993">
+        <time>
+          <value>1990-04-15T02:13:22.410000Z</value>
+          <uncertainty>0.03</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="RPW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3841998">
+        <time>
+          <value>1990-04-15T02:13:31.800000Z</value>
+          <uncertainty>0.12</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="RPW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842003">
+        <time>
+          <value>1990-04-15T02:13:27.920000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="BIB" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842008">
+        <time>
+          <value>1990-04-15T02:13:22.220000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="OHW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842013">
+        <time>
+          <value>1990-04-15T02:13:36.760000Z</value>
+          <uncertainty>0.19</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="OSD" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842018">
+        <time>
+          <value>1990-04-15T02:13:30.180000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="WPB" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842023">
+        <time>
+          <value>1990-04-15T02:13:23.220000Z</value>
+          <uncertainty>0.06</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="JCW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:56.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842028">
+        <time>
+          <value>1990-04-15T02:13:34.690000Z</value>
+          <uncertainty>0.07</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="JCW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842033">
+        <time>
+          <value>1990-04-15T02:13:51.000000Z</value>
+          <uncertainty>0.16</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="ELL" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842038">
+        <time>
+          <value>1990-04-15T02:13:45.130000Z</value>
+          <uncertainty>0.12</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="FMW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842043">
+        <time>
+          <value>1990-04-15T02:13:35.030000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="SHB" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842048">
+        <time>
+          <value>1990-04-15T02:13:52.730000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="SHB" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842053">
+        <time>
+          <value>1990-04-15T02:13:32.400000Z</value>
+          <uncertainty>0.07</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="STW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842058">
+        <time>
+          <value>1990-04-15T02:13:35.240000Z</value>
+          <uncertainty>0.12</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="GMW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842063">
+        <time>
+          <value>1990-04-15T02:13:16.030000Z</value>
+          <uncertainty>0.05</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="MBW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842068">
+        <time>
+          <value>1990-04-15T02:13:23.640000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="CN" stationCode="SNB" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842073">
+        <time>
+          <value>1990-04-15T02:13:31.300000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="HTW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842078">
+        <time>
+          <value>1990-04-15T02:13:19.790000Z</value>
+          <uncertainty>0.1</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="MCW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/3842083">
+        <time>
+          <value>1990-04-15T02:13:30.910000Z</value>
+          <uncertainty>0.11</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="BHW" locationCode="" channelCode="EHZ"></waveformID>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2012-02-27T16:43:57.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <amplitude publicID="quakeml:uw.anss.org/Coda/UW/1100413">
+        <genericAmplitude>
+          <value>44.0</value>
+        </genericAmplitude>
+        <type>END</type>
+        <category>duration</category>
+        <unit>s</unit>
+        <waveformID networkCode="UW" stationCode="CMW" locationCode="" channelCode="EHZ"></waveformID>
+        <magnitudeHint>MD</magnitudeHint>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+      </amplitude>
+      <amplitude publicID="quakeml:uw.anss.org/Coda/UW/1100408">
+        <genericAmplitude>
+          <value>48.0</value>
+        </genericAmplitude>
+        <type>END</type>
+        <category>duration</category>
+        <unit>s</unit>
+        <waveformID networkCode="UW" stationCode="HDW" locationCode="" channelCode="EHZ"></waveformID>
+        <magnitudeHint>MD</magnitudeHint>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+      </amplitude>
+      <amplitude publicID="quakeml:uw.anss.org/Coda/UW/1100423">
+        <genericAmplitude>
+          <value>40.0</value>
+        </genericAmplitude>
+        <type>END</type>
+        <category>duration</category>
+        <unit>s</unit>
+        <waveformID networkCode="UW" stationCode="JCW" locationCode="" channelCode="EHZ"></waveformID>
+        <magnitudeHint>MD</magnitudeHint>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+      </amplitude>
+      <amplitude publicID="quakeml:uw.anss.org/Coda/UW/1100428">
+        <genericAmplitude>
+          <value>30.0</value>
+        </genericAmplitude>
+        <type>END</type>
+        <category>duration</category>
+        <unit>s</unit>
+        <waveformID networkCode="UW" stationCode="MBW" locationCode="" channelCode="EHZ"></waveformID>
+        <magnitudeHint>MD</magnitudeHint>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+      </amplitude>
+      <amplitude publicID="quakeml:uw.anss.org/Coda/UW/1100418">
+        <genericAmplitude>
+          <value>45.0</value>
+        </genericAmplitude>
+        <type>END</type>
+        <category>duration</category>
+        <unit>s</unit>
+        <waveformID networkCode="UW" stationCode="RPW" locationCode="" channelCode="EHZ"></waveformID>
+        <magnitudeHint>MD</magnitudeHint>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>final</evaluationStatus>
+      </amplitude>
+    </event>
+  </eventParameters>
+</q:quakeml>
