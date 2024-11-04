@@ -1,3 +1,21 @@
+"""
+:module: eqc_utils.logging
+:auth: Nathan T. Stevens
+:email: ntsteven@uw.edu
+:org: Pacific Northwest Seismic Network
+:license: GNU GPLv3
+:purpose: 
+    This module contains helper methods for setting up logging
+    to the command line
+
+:attribution: 
+    These method(s) are abstracted from the Python Logging Cookbook
+    https://docs.python.org/3/howto/logging-cookbook.html
+    And use a bug-fix provided by StackExchange user "Euclides"
+    from Sep 8, 2015 for preventing duplicate StreamHandler
+    instances.
+"""
+
 import os, logging
 
 def setup_terminal_logger(name, level=logging.INFO):
@@ -37,3 +55,4 @@ def setup_terminal_logger(name, level=logging.INFO):
         # Add formatting & handler
         Logger.addHandler(ch)
     return Logger
+

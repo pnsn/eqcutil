@@ -1,5 +1,5 @@
 """
-:module: eqcorrscan_utils.eventbank
+:module: eqc_utils.eventbank
 :auth: Nathan T. Stevens
 :email: ntsteven@uw.edu
 :org: Pacific Northwest Seismic Network
@@ -14,7 +14,6 @@
 
 import fnmatch, os
 import obspy
-import pandas as pd
 from obsplus import EventBank
 from obsplus.bank.eventbank import compose_docstring
 from obsplus.constants import get_events_parameters
@@ -85,27 +84,45 @@ class EventBank(EventBank):
 
 def initialize_event_bank(catalog = None,
                           base_path = os.path.join('.','EventBank'),
-                          path_structure = '{year}',
+                          path_structure = '{year}/{month}',
                           name_structure = 'uw{event_id_end}',
+                          **options):
+    """Simple wrapper script for :meth:`~obsplus.bank.eventbank.EventBank.__init__`
+    that provides some alternative default inputs for PNSN projects and allows
+    for a
+
+    :param catalog: catalog of event metadata to add to this EventBank, defaults to None
+    :type catalog: obspy.core.event.Catalog, optional
+    :param base_path: root directory location the EventBank, defaults to os.path.join('.','EventBank')
+    :type base_path: str, optional
+    :param path_structure: directory structure for the EventBank files, defaults to '{year}/{month}'
+    :type path_structure: str, optional
+    :param name_structure: file naming structure for the EventBank, defaults to 'uw{event_id_end}'
+    :type name_structure: str, optional
+    :return:
+     - **ebank** (*obsplus.bank.eventbank.EventBank*) -- initialized event bank
+    """    
+    ebank = EventBank(base_path=base_path,
+                      path_structure=path_structure,
+                      name_structure=name_structure,
+                      **options)
+    if isinstance(catalog, obspy.core.event.Catalog):
+        ebank.put_events(catalog)
+    return ebank
+    
 
 
-
-
-
-def connect_to_eventbank(base_path=os.path.join('.','EventBank'),
-                     path_structure='{year}',
-                     name_structure='uw{event_id_end}',
-                     events_to_add=None,
-                     **options):
-    """Establish a connection (or re-create) the Obsplus EventBank hosted
-    in the `data/XML/QUAKE/BANK` directory of this repository and provide
-    an additional option to add new events to the bank.
+def connect_to_eventbank(
+    base_path=os.path.join('.','EventBank'),
+    path_structure='{year}/{month}',
+    name_structure='uw{event_id_end}'):
+    """Establish a connection to an Obsplus EventBank client
     
     :param base_path: path to the root directory of the EventBank (or where it will be hosted),
-        defaults to os.path.join('data','XML','QUAKE','BANK').
+        defaults to os.path.join('.','EventBank').
     :type base_path: str, optional
     :param path_structure: path_structure format for a :class:`~obsplus.bank.EventBank`,
-        defaults to '{year}'
+        defaults to '{year}/{month}'
     :type path_structure: str, optional
     :param name_structure: naming format for XML objects in the EventBank,
         defaults to 'uw{event_id_end}'. This produces files/entries named uw#########.xml
@@ -127,26 +144,7 @@ def connect_to_eventbank(base_path=os.path.join('.','EventBank'),
      - **ebank** (*obsplus.EventBank*) - initialized eventbank client
     
     """    
-    ebank = EventBank2(base_path=base_path,
+    ebank = EventBank(base_path=base_path,
                       path_structure=path_structure,
-                      name_structure=name_structure,
-                      **options)
-    # Skip if default None
-    if events_to_add is None:
-        pass
-    # Load QuakeML file then pass to EventBank.put_events
-    elif isinstance(events_to_add, str):
-        try:
-            ebank.put_events(obspy.read_events(events_to_add))
-        except:
-            warnings.warn(f'could not read str-formatted {events_to_add} - are you sure this is a QuakeML file? Returning EventBank as-is.')
-    # pass Catalog or Event object to
-    elif isinstance(events_to_add, (obspy.core.event.Catalog, obspy.core.event.Event)):
-        try:
-            ebank.put_events(events_to_add)
-        except:
-            warnings.warn(f'could not add Catalog | Event type object to this EventBank. Returning EventBank as-is.')
-    else:
-        warnings.warn(f'events_to_add of type {type(events_to_add)} not supported. Returning EventBank as-is.')
-    
+                      name_structure=name_structure)
     return ebank

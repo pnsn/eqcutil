@@ -1,3 +1,11 @@
+"""
+:module: eqc_utils.template
+:auth: Nathan T. Stevens; Barrett Johnson
+:email: ntsteven@uw.edu; bnjo@uw.edu
+:org: Pacific Northwest Seismic Network
+
+"""
+
 import copy, logging, os
 from pathlib import Path
 

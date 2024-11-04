@@ -1,5 +1,6 @@
 import logging
 import obspy
+import numpy as np
 
 from eqcorrscan.utils.catalog_utils import filter_picks
 from eqcorrscan.utils.clustering import catalog_cluster
@@ -45,10 +46,21 @@ def apply_phase_hints(catalog):
 def filter_picks(catalog, stations=None, channels=None, networks=None,
                  locations=None, top_n_picks=None, evaluation_mode='all',
                  phase_hints=None, enforce_single_pick=False,
-                 min_delta=0, max_delta=180):
-    """Augments the EQcorrscan :meth:`~eqcorrscan.utils.catalog_utils.filter_picks` method.
-    Filter events in the catalog based on a number of parameters.
+                 min_delta=None, max_delta=None, min_baz=None, max_baz=None,
+                 min_depth=None, max_depth=None):
+    """Filter picks in an ObsPy :class:`~obspy.core.event.Catalog` object based
+    on station, phase-type, and source-receiver geometries.
+    
+    Augments the EQcorrscan :meth:`~eqcorrscan.utils.catalog_utils.filter_picks` 
+    method by adding the **min_delta**, **max_delta**, **min_az**, **max_az**,
+    **min_depth**, **max_depth**, and **inv** arguments to facilitate
+    source-receiver geometry based filtering of :class:`~obspy.core.event.Pick`
+    objects in the input :class:`~obspy.core.event.Catalog` object for picks
+    that are associated to one or more :class:`~obspy.core.event.Origin` objects
+    via :class:`~obspy.core.event.Arrival` objects.
 
+    Parameters
+    ----------
     :param catalog: Catalog to filter.
     :type catalog: obspy.core.event.Catalog
     :param stations: List for stations to keep picks from.
@@ -78,6 +90,23 @@ def filter_picks(catalog, stations=None, channels=None, networks=None,
     :return:
      - **out** (*obspy.core.event.Catalog*) -- filtered catalog
     """
+    spatial_kwargs = {'min_delta': min_delta,
+                      'max_delta': max_delta,
+                      'min_baz': min_baz,
+                      'max_baz': max_baz,
+                      'min_depth': min_depth,
+                      'max_depth': max_depth}
+    # Handle Nones
+    for _k, _v in spatial_kwargs:
+        if _v is None:
+            if 'max' in _k:
+                spatial_kwargs.update({_k: np.inf})
+            else:
+                spatial_kwargs.update({_k: -np.inf})
+    
+    # Run filtering
+    
+
     # Run distance filtering first
     if min_delta > 0 or max_delta < 180:
         for event in catalog:
@@ -92,7 +121,7 @@ def filter_picks(catalog, stations=None, channels=None, networks=None,
             event.picks = picks
 
     # Then run the rest of the filtering
-    catalog = xutil.filter_picks(
+    catalog = filter_picks(
         catalog,stations=stations, channels=channels, networks=networks,
         locations=locations, top_n_picks=top_n_picks,
         evaluation_mode=evaluation_mode, phase_hints=phase_hints,
