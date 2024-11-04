@@ -16,7 +16,41 @@
     instances.
 """
 
-import os, logging
+import sys, logging
+
+class CriticalExitHandler(logging.Handler):
+    """A custom :class:`~logging.Handler` sub-class that emits a sys.exit
+    if a logging instance emits a logging.CRITICAL level message
+
+    Constructed through a prompt to ChatGPT and independently
+    tested by the author.
+
+    """
+    def __init__(self, exit_code=1, **kwargs):
+        super().__init__(**kwargs)
+        self.exit_code = exit_code
+        
+    def emit(self, record):
+        if record.levelno == logging.CRITICAL:
+            sys.exit(self.exit_code)
+
+def rich_error_message(e):
+    """Given the raw output of an "except Exception as e"
+    formatted clause, return a string that emulates
+    the error message print-out from python
+
+    e.g., 
+    'TypeError: input "input" is not type int'
+
+    :param e: Error object
+    :type e: _type_
+    :return: error message
+    :rtype: str
+    """    
+    etype = type(e).__name__
+    emsg = str(e)
+    return f'{etype}: {emsg}'
+
 
 def setup_terminal_logger(name, level=logging.INFO):
     """QuickStart setup for a write-to-command-line-only
