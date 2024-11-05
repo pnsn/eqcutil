@@ -8,12 +8,75 @@
     This module provides a more-approachable implementation of the pyrocko.cake
     module for ray-tracing in a 1-D velocity structure and integration with
     ObsPy seismic event and station metadata objects that are used with EQcorrscan
-"""
 
+TODO: Consider making this a class that contains
+"""
+import logging
 import pandas as pd
+from obspy import Inventory
 from obspy.core.event import Pick, Arrival, WaveformStreamID
 from obspy.geodetics import locations2degrees
 from pyrocko import cake
+from eqcorrscan_utils.logging import rich_error_message
+
+class RayModeler(object):
+    """
+    A class for managing the inputs and outputs of modeling 
+    """
+    def __init__(self, model='P4', inventory=None):
+        # Set up logging
+        self.Logger = logging.getLogger(self.__name__())
+        # Compatability checks on model
+        if isinstance(model, cake.LayeredModel):
+            self.model = model
+        elif isinstance(model, str):
+            try:
+                self.make_model(name=model)
+            except Exception as e:
+                self.Logger.critical(rich_error_message(e))
+        else:
+            self.Logger.critical(f'TypeError: "model" value {model} not supported.')
+        
+        # inventory compatability checks
+        if isinstance(inventory, Inventory):
+            self.inv = inventory
+            if len(self.inv) == 0:
+                self.Logger.warning('Initialized with an empty inventory - will need to add stations to model rays!')
+        elif inventory is None:
+            self.Logger.warning('Initialized without an inventory - will need to add an inventory to model rays!')
+        else:
+            self.Logger.critical(f'TypeError: "inventory" type {type(inventory)} not supported.')
+        # Initialize Summary Object
+        self.summary = pd.DataFrame()
+        # Initialize origin list
+        self.origins = []
+
+    def __name__(self):
+        return 'eqcorrscan_utils.cake.RayModeler'
+
+    def make_model(self, name='P4'):
+        try:
+            self.model = make_model(name=name)
+        except Exception as e:
+            raise
+
+    def model_raypaths(self, origin, phases=['P','S']):
+        if not (origin, phases) in self.origins:
+            results = model_raypaths(self.model, origin, self.inv, phases=phases)
+            results = ray_summary(results, origin, self.inv)
+            self.summary = pd.concat([self.summary, results], ignore_index=True)
+            self.origins.append((origin, phases))
+        else:
+            self.Logger.warning('This origin-phases combination has already been run!')
+    
+
+
+    # def 
+
+
+#######################
+### METHODS SECTION ###
+#######################
 
 def model_arrivals(origin, inventory, model_name='P4', phases=['P','S']):
     """Model raypaths and travel-times between a seismic event
@@ -54,7 +117,7 @@ def model_arrivals(origin, inventory, model_name='P4', phases=['P','S']):
     summary = ray_summary(raypaths, origin, inventory)
     return summary
 
-
+## MODEL CONSTRUCTION METHODS ##
 
 def get_pnsn_model(name='P4'):
     """Load 1-D velocity Models used by the PNSN
@@ -131,6 +194,11 @@ def make_model(name='P4'):
     Vp, VpVs, Ztop = get_pnsn_model(name=name)
     return create_1d_model(Vp, VpVs, Ztop)
 
+
+
+#############################
+## RAYPATH MODELING METHOD ##
+#############################
 def model_raypaths(model, origin, inventory, phases=['P','S']):
     """
     Model the P-wave travel times at stations in the provided inventory
@@ -174,21 +242,33 @@ def model_raypaths(model, origin, inventory, phases=['P','S']):
                 results[station.code] = arrivals
     return results
 
-def make_wfid(nslc):
-    kwargs = dict(zip(['network_code','station_code','location_code','channel_code'],
-                      nslc.split(".")))
-    return WaveformStreamID(**kwargs)
+########################
+## CONVERSION METHODS ##
+########################
+def make_wfid(nslc, resource_uri=None):
+    """Convert a SEED channel code string into a 
+    :class:`~obspy.core.event.WaveformStreamID`
+    object.
+
+    :param nslc: SEED channel code
+    :type nslc: str
+    :return: 
+     - **waveform_id** (*obspy.core.event.WaveformStreamID*) -- waveform stream ID object
+    """    
+    return WaveformStreamID(seed_string=nslc, resource_uri=resource_uri)
 
 def ray2pick(ray, wfid, origin):
     """
-    Convert a 
+    Create a :class:`~obspy.core.event.Pick` representation of
+      a :class:`~pyrocko.cake.RayPath` object
     
-    :param ray: _description_
-    :type ray: _type_
-    :param wfid: _description_
-    :type wfid: _type_
-    :param origin: _description_
-    :type origin: _type_
+    :param ray: raypath object
+    :type ray: pyrocko.cake.RayPath
+    :param wfid: waveform stream ID
+    :type wfid: obspy.core.event.WaveformStreamID
+    :param origin: event origin used to generate **ray**
+    :type origin: obspy.core.event.Origin
+
     """    
     t0 = origin.time
     ta = t0 + ray.t
