@@ -1,3 +1,16 @@
+"""
+:module: eqcorrscan_utils.waveforms
+:auth: Nathan T. Stevens
+:email: ntsteven@uw.edu
+:org: Pacific Northwest Seismic Network
+:license: GPLv3
+:purpose:
+    This module provides some helper functions
+    to aid in initializing and using ObsPlus
+    :class:`~obsplus.bank.wavebank.WaveBank` objects
+    see: https://github.com/niosh-mining/obsplus
+"""
+
 import os, glob
 from pathlib import Path
 from obspy import read

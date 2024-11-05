@@ -1,3 +1,13 @@
+"""
+:module: eqcorrscan_utils.catalog
+:auth: Nathan T. Stevens; Barret Johnson
+:email: ntsteven@uw.edu; bnjo@wu.edu
+:org: Pacific Northwest Seismic Network
+:license: GNU GPLv3
+:purpose: This module contains methods that help with
+    metadata manipulation in :class:`~obspy.core.event.Catalog`
+    objects
+"""
 import logging
 import obspy
 import numpy as np

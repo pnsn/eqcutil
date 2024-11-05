@@ -1,5 +1,5 @@
 """
-:module: eqc_utils.template
+:module: eqcorrscan_utils.template
 :auth: Nathan T. Stevens; Barrett Johnson
 :email: ntsteven@uw.edu; bnjo@uw.edu
 :org: Pacific Northwest Seismic Network
