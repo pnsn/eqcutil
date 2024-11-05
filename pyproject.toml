@@ -15,7 +15,16 @@ classifiers = [
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha"
 ]
-dependencies = ["-r requirements.txt"]
+dependencies = [
+    "obspy",
+    "pandas",
+    "obsplus",
+    "pyrocko",
+    "eqcorrscan",
+    "pyqt5",
+    "pyqtwebengine",
+    "pytest
+]
 
 [tool.setuptools.packages.find]
 include = ["eqc_utils*"]
