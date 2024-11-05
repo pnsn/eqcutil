@@ -52,7 +52,7 @@ def rich_error_message(e):
     return f'{etype}: {emsg}'
 
 
-def basic_logger_config(name, level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"):
+def basic_logger_config(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"):
     logging.basicConfig(level=level, format=format)
 
 
