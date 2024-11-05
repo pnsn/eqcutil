@@ -50,45 +50,20 @@ def catalog_cluster(catalog, thresh, metric='distance', show=False):
     return clusters
 
 
-def cluster(templates, show=False, corr_thresh=0.3, shift_len=0,
-            allow_individual_trace_shifts=True, fill_value=None,
-            cores='all', save_path=False, save_subtribes=True,
-            **kwargs):
+def cross_corr_cluster(
+        templates, show=False, corr_thresh=0.3, shift_len=0,
+        allow_individual_trace_shifts=True, fill_value=None,
+        cores='all', save_path=False, save_subtribes=True,
+        **kwargs):
     """
     Cluster template waveforms based on average correlations.
 
-    ADAPTED BY N. STEVENS
+    Adapted from :meth:`~eqcorrscan.util.clustering.cluster` to
+    provide additional file saving/formatting support to make
+    it easier to re-analyze tribe clustering analysis outputs.
 
-    Function to take a set of templates and cluster them, will return groups
-    as lists of streams.  Clustering is done by computing the cross-channel
-    correlation sum of each stream in stream_list with every other stream in
-    the list.  :mod:`scipy.cluster.hierarchy` functions are then used to
-    compute the complete distance matrix, where distance is 1 minus the
-    normalised cross-correlation sum such that larger distances are less
-    similar events.  Groups are then created by clustering the distance matrix
-    at distances less than 1 - corr_thresh.
-
-    When distance_matrix contains NaNs (event pairs that cannot be directly
-    compared), then the mean correlation between templates is used instead of
-    NaN (see https://github.com/eqcorrscan/EQcorrscan/issues/484).
-
-    Will compute the distance matrix in parallel, using all available cores.
-    The method, metric, and order to compute linkage from the distance matrix
-    can be controled with parameters from scipy.cluster.hierarchy.linkage as
-    kwargs.
-
-    ADDED/MODIFIED BY NTS: 
-    
-    **templates** -- Supercedes **template_list**. Provides the expected
-    "list of tuples" format for sub-methods, creating tuples as
-    (template.st, template.name).
-
-    **save_path** -- This method now saves the distance matrix, the shift
-    matrix, and the shift dictionary output by sub-method
-    :meth:`~eqcorrscan.util.clustering.distance_matrix` to a specified
-    save directory. Supercedes the **save_corrmat** argument.
-
-    **fill_value** -- shorthand alias for "replace_nan_distances_with"
+    Parameters
+    ----------
 
     :type templates: iterable collection of
         :class:`~eqcorrscan.core.match_filter.template.Template` objects
@@ -123,6 +98,43 @@ def cluster(templates, show=False, corr_thresh=0.3, shift_len=0,
     :returns:
         List of groups. Each group is a list of
         :class:`obspy.core.stream.Stream` making up that group.
+
+    Original Documentation from `cluster`
+    ------------------------------------
+
+    Function to take a set of templates and cluster them, will return groups
+    as lists of streams.  Clustering is done by computing the cross-channel
+    correlation sum of each stream in stream_list with every other stream in
+    the list.  :mod:`scipy.cluster.hierarchy` functions are then used to
+    compute the complete distance matrix, where distance is 1 minus the
+    normalised cross-correlation sum such that larger distances are less
+    similar events.  Groups are then created by clustering the distance matrix
+    at distances less than 1 - corr_thresh.
+
+    When distance_matrix contains NaNs (event pairs that cannot be directly
+    compared), then the mean correlation between templates is used instead of
+    NaN (see https://github.com/eqcorrscan/EQcorrscan/issues/484).
+
+    Will compute the distance matrix in parallel, using all available cores.
+    The method, metric, and order to compute linkage from the distance matrix
+    can be controled with parameters from scipy.cluster.hierarchy.linkage as
+    kwargs.
+
+    Modifications
+    -------------
+    
+    **templates** -- Supercedes **template_list**. Provides the expected
+    "list of tuples" format for sub-methods, creating tuples as
+    (template.st, template.name).
+
+    **save_path** -- This method now saves the distance matrix, the shift
+    matrix, and the shift dictionary output by sub-method
+    :meth:`~eqcorrscan.util.clustering.distance_matrix` to a specified
+    save directory. Supercedes the **save_corrmat** argument.
+
+    **fill_value** -- shorthand alias for "replace_nan_distances_with"
+
+    
     """
     if cores == 'all':
         num_cores = cpu_count()
