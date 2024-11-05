@@ -16,14 +16,15 @@ classifiers = [
     "Development Status :: 3 - Alpha"
 ]
 dependencies = [
+    "numpy<2",
     "obspy",
     "pandas",
     "obsplus",
-    "pyrocko",
     "eqcorrscan",
+    "pyrocko",
+    "pytest",
     "pyqt5",
-    "pyqtwebengine",
-    "pytest
+    "pyqtwebengine"
 ]
 
 [tool.setuptools.packages.find]
