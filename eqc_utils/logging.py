@@ -52,6 +52,10 @@ def rich_error_message(e):
     return f'{etype}: {emsg}'
 
 
+def basic_logger_config(name, level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"):
+    logging.basicConfig(level=level, format=format)
+
+
 def setup_terminal_logger(name, level=logging.INFO):
     """QuickStart setup for a write-to-command-line-only
     logger that has safety catches against creating
