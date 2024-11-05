@@ -7,12 +7,12 @@ name = "eqc_utils"
 version = "0.0.0"
 authors = [{name="Nathan T. Stevens", email="ntsteven@uw.edu"},
            {name="Barrett Johnson", email="bnjo@uw.edu"}]
-requires-python = ">=3.9"
+requires-python = "<=3.10"
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: GNUv3 :: GNU General Public License v3",
-    "Operating System :: Agnostic",
+    "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha"
 ]
 dependencies = [
@@ -21,11 +21,12 @@ dependencies = [
     "obspy",
     "pandas",
     "obsplus",
+    "eqcorrscan",
     "pyrocko",
     "ipython",
     "pytest",
     "pyqt",
-    "pyqtwebengine
+    "pyqtwebengine"
 ]
 
 [tool.setuptools.packages.find]
