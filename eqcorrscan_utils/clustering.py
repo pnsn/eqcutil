@@ -21,7 +21,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram
 from scipy.spatial.distance import squareform
 
 from eqcorrscan import Template, Tribe
-from eqcorrscan.utils.clustering import handle_distmat_nans, distance_matrix, fcluster
+from eqcorrscan.utils.clustering import cluster, handle_distmat_nans, distance_matrix, fcluster
 
 
 
@@ -240,13 +240,15 @@ def cross_corr_cluster(
     return groups
 
 
-def tribe_cluster(templates, save_path='./cluster_results',
-                  corr_thresh=0.3, shift_len=1., fill_value = 1, 
-                  allow_individual_trace_shifts=False, cores='all', show=True, method='linear',
-                  metrci='euclidian', optimal_ordering=False):
-    """Conduct waveform-based clustering of :class:`~eqcorrscan.core.match_filter.template.Template` objects
-    using the :meth:`~eqcorrscan.util.clustering.cluster` method and record the parameter inputs
-    and results (including the distance matrix) in a specified directory.
+def tribe_cluster(
+        tribe, save_path='./cluster_results',
+        corr_thresh=0.3, shift_len=1., fill_value = 1, 
+        allow_individual_trace_shifts=False, cores='all', 
+        show=True, method='linear',
+        metric='euclidian', optimal_ordering=False):
+    """Conduct waveform-based clustering of :class:`~eqcorrscan.core.match_filter.template.Template`
+    objects using the :meth:`~eqcorrscan.util.clustering.cluster` method and record the parameter
+    inputs and results (including the distance matrix) in a specified directory.
 
     We provide an extended set of input parameters to encompass patameters for this method,
     and the underlying :meth:`~eqcorrscan.util.clustering.cluster` and :meth:`~scipy.cluster.hierarchy.linkage`
@@ -254,17 +256,15 @@ def tribe_cluster(templates, save_path='./cluster_results',
 
     `tribe_cluster` Parameters
     --------------------------
-    :param templates: iterable collection of template objects
-    :type: eqcorrscan.core.match_filter.tribe.Tribe or similar
+    :param tribe: tribe containing templates
+    :type: eqcorrscan.core.match_filter.tribe.Tribe
     :param save_path: relative or absolute path to the directory in which
         clustering results should be saved, defaults to './clustering_results'.
         This directory path will be generated if it does not already exist
     :type save_path: str, optional
 
-    
     `cluster` Parameters
     --------------------
-
     :param corr_thresh: cross-correlation threshold for delineating
         template clusters, defaults to 0.3
     :type corr_thresh: float, optional
@@ -281,8 +281,12 @@ def tribe_cluster(templates, save_path='./cluster_results',
 
     `linkage` Parameters
     --------------------
-    :param method: method to use for linkage
-
+    :param method: method to use for linkage, defaults to 'linear'
+    :type method: str, optional
+    :param metric: metric to use for linkage, defaults to 'euclidian'
+    :type metric: str, optional
+    :param optimal_ordering: should optimal ordering be used? Defaults to False
+    :type optimal_ordering: bool, optional
 
     Files Generated
     ---------------
@@ -290,17 +294,23 @@ def tribe_cluster(templates, save_path='./cluster_results',
         with parameter names in the left column and values in the right column
      - **groups_cct###.csv** -- names of templates (left column) and their group number (right column)
         based on the provided **corr_thresh** value (_cct### = _cct{corr_thresh: %.2f})
-     - **dist_mat.npy*** -- distance matrix saved by 
+     - **dist_mat_{fill_value}.npy*** -- distance matrix saved by 
+
+    Output
+    ------
+    :return:
+     - **subtribes** (*dict*) - dictionary of eqcorrscan.Tribe objects that contain
+        grouped templates, keyed to group number
 
     """    
-    # Must be an iterable composed only of Template objects
-    if not hasattr(templates, '__iter__'):
-        raise AttributeError(f'input "templates" is not iterable')
-    elif not all(isinstance(_e, Template) for _e in templates):
-        raise TypeError(f'not all elements of iterable "templates" are type eqcorrscan.core.match_filter.template.Template')
+    if not isinstance(tribe, Tribe):
+        raise TypeError('input "tribe" must be type eqcorrscan.Tribe')
+    elif len(tribe) < 2:
+        raise ValueError(f'tribe of length {len(tribe)} cannot be clustered. 2 minimum.')
     else:
         pass
-    
+
+    # Compatability check for save_path
     if not isinstance(save_path, str):
         raise TypeError
     elif not os.path.exists(save_path):
@@ -308,17 +318,66 @@ def tribe_cluster(templates, save_path='./cluster_results',
     else:
         pass
 
-    if fill_value not in ['mean','max']
-
-    template_list = _compose_template_list(templates)
-
-    # Force save
-    if save_corrmat:
-        savename = kwargs['save_corrmat'].copy()
-        kwargs.update({'save_corrmat': True})
-
+    # Compatability checks for fill_value
+    if fill_value in ['mean','min']:
+        pass
+        dist_mat_name = f'dist_mat_{fill_value}.npy'
+    elif isinstance(fill_value, float):
+        pass
+        dist_mat_name = 'dist_mat_%.2f.npy'%(fill_value)
+    elif fill_value is None:
+        dist_mat_name = 'dist_mat_None.npy'
+    else:
+        raise ValueError(f'fill_value {fill_value} not supported.')
+    
+    # Pull together `cluster` key-words
+    kwargs = {'show': show,
+              'corr_thresh': corr_thresh,
+              'shift_len': shift_len,
+              'allow_individual_trace_shift': allow_individual_trace_shifts,
+              'save_corrmat': True,
+              'replace_nan_distances_with': fill_value,
+              'cores': cores,
+              'method': method,
+              'metric': metric,
+              'optimal_ordering': optimal_ordering}
+    
+    # Save kwargs as parameters
+    with open(os.path.join(save_path,'params.csv'), 'w') as _f:
+        for _k, _v in kwargs.items():
+            _f.write(f'{_k},{_v}\n')
+    
+    # Group Templates
+    template_list = _compose_template_list(tribe)
+    
+    # RUN CLUSTERING
     groups = cluster(template_list, **kwargs)
     
+    # Put templates into groups
+    subtribes = {}
+    for _e, group in enumerate(groups):
+        itribe = Tribe()
+        for entry in group:
+            name = entry[1]
+            itemplate = tribe.select(name)
+            itribe += itemplate
+        subtribes.update({_e: itribe})
+
+    # Move dist_mat.npy & re-label
+    src = os.path.join(Path().cwd(), 'dist_mat.npy')
+    dest = os.path.join(save_path,dist_mat_name)
+    if os.path.isfile(src):
+        os.rename(src, dest)
+
+    # Save group membership as CSV
+    with open(os.path.join(save_path, f'groups_cct{corr_thresh:.2f}'), 'w') as _f:
+        _f.write('template_name,group_id\n')
+        for _e, group in enumerate(groups):
+            for entry in group:
+                _f.write(f'{entry[1]},{_e}\n')
+            
+    return subtribes
+
 
 def _compose_template_list(templates):
     """Compose a template list formatted as an input
@@ -375,7 +434,7 @@ def reconstitute_linkage(distance_matrix_file, fill_value=1, **kwargs):
     in :meth:`~eqcorrscan.util.cluster.clustering`.
     
     .. rubric:: Notes on `fill_value`
-        Useful values for fill_value might include:
+        Explainer for fill_value selection:
         * 1 - treat all missing channel-wise correlations as
             contributing the maximum distance (i.e., 0 correlation)
             to the template-averaged correlation / distance.
