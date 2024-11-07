@@ -24,7 +24,7 @@ from eqcorrscan_utils.logging import setup_terminal_logger
 from eqcorrscan_utils.eventbank import initialize_event_bank
 from eqcorrscan_utils.catalog import apply_phase_hints, filter_picks
 from eqcorrscan_utils.template import augment_template, rename_templates
-from eqcorrscan_utils.clustering import cluster
+from eqcorrscan_utils.clustering import tribe_cluster
 from eqcorrscan_utils.snuffler import plant
 
 # Add 'snuffler' functionality to Tribe and Template class objects
@@ -82,11 +82,10 @@ for template in tribe:
 tribe.snuffle()
 
 # Run clustering on templates
-groups = cluster(
+groups = tribe_cluster(
     tribe,
     corr_thresh=0.4,
     fill_value=1,
     show=True,
-    save_subtribes=True,
     save_path=os.path.join('..','demo_output','template_clustering'))
 
