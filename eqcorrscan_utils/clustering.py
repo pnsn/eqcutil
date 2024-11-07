@@ -11,6 +11,8 @@
 :attribution:
     Any use of these methods should include an ackowledement of
     the EQcorrscan project or paper (e.g., Chamberlain et al., 2017)
+
+TODO: Merge cross_corr_cluster and tribe_cluster
 """
 import os, logging
 from pathlib import Path
@@ -51,9 +53,9 @@ def catalog_cluster(catalog, thresh, metric='distance', show=False):
 
 
 def cross_corr_cluster(
-        templates, show=False, corr_thresh=0.3, shift_len=0,
-        allow_individual_trace_shifts=True, fill_value=None,
-        cores='all', save_path=False, save_subtribes=True,
+        templates, show=False, corr_thresh=0.3, shift_len=1.,
+        allow_individual_trace_shifts=False, fill_value=None,
+        cores='all', save_path='.', save_subtribes=True,
         **kwargs):
     """
     Cluster template waveforms based on average correlations.
