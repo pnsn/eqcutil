@@ -17,7 +17,7 @@ from obspy import Inventory
 from obspy.core.event import Pick, Arrival, WaveformStreamID
 from obspy.geodetics import locations2degrees
 from pyrocko import cake
-from eqcorrscan_utils.util.logging import rich_error_message
+from eqcutil.util.logging import rich_error_message
 
 class RayModeler(object):
     """

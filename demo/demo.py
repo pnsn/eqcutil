@@ -20,12 +20,12 @@ from obspy import read_events
 from obspy.clients.fdsn import Client
 from eqcorrscan import Template, Tribe
 
-from eqcorrscan_utils.util.logging import setup_terminal_logger
-from eqcorrscan_utils.database.eventbank import initialize_event_bank
-from eqcorrscan_utils.augment.catalog import apply_phase_hints, filter_picks
-from eqcorrscan_utils.augment.template import augment_template, rename_templates
-from eqcorrscan_utils.process.clustering import tribe_cluster
-from eqcorrscan_utils.visualize.snuffler import plant
+from eqcutil.util.logging import setup_terminal_logger
+from eqcutil.database.eventbank import initialize_event_bank
+from eqcutil.augment.catalog import apply_phase_hints, filter_picks
+from eqcutil.augment.template import augment_template, rename_templates
+from eqcutil.process.clustering import tribe_cluster
+from eqcutil.viz.eqc_compat import plant
 
 # Add 'snuffler' functionality to Tribe and Template class objects
 plant()
