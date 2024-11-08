@@ -1,4 +1,16 @@
-
+"""
+:module: eqcutil.core.clusteringtribe.ClusteringTribe
+:auth: Nathan T. Stevens
+:email: ntsteven@uw.edu
+:org: Pacific Northwest Seismic Network
+:license: GNU GPLv3
+:purpose: This contains a child-class of the :class:`~eqcorrscan.Tribe` class
+    and provides extended functionalities for template clustering methods
+    as class-methods.
+:attribution: This builds on the EQcorrscan project. If you find this class
+    useful please be sure to cite both EQcorrscan (e.g., Chamberlain et al., 2017)
+    and perhaps this repository as well.
+"""
 import os, logging, tarfile, shutil, pickle, tempfile, glob, fnmatch
 from pathlib import Path
 
@@ -50,7 +62,7 @@ class ClusteringTribe(Tribe):
         if not hasattr(self,'snuffle'):
             eqc_compat.plant()
 
-        self.clusters = pd.DataFrame(columns=['name'])
+        self.clusters = pd.DataFrame(columns=['id_no'])
         self.dist_mat = None
         self.cluster_kwargs = {}
 
@@ -89,28 +101,28 @@ class ClusteringTribe(Tribe):
             Logger.warning(f'type of other does not conform with ClusteringTribe.extend')
 
     def _deduplicate_name(self, other, delimiter='__', start=0):
-        if other not in self.clusters.name.values:
+        if other not in self.clusters.index.values:
             return other
         else:
             if delimiter not in other:
                 basename = other
             else:
                 basename = other.split('__')[0]
-            matches = fnmatch.filter(self.clusters.name.values, basename+'*')
+            matches = fnmatch.filter(self.clusters.index.values, basename+'*')
             while f'{basename}{delimiter}{start}' in matches:
                 start += 1
             return f'{basename}{delimiter}{start}'
 
     def add_template(self, other, rename_duplicates=False, **options):
         if isinstance(other, Template):
-            if other.name in self.clusters.name.values:
+            if other.name in self.clusters.index.values:
                 if rename_duplicates:
                     other.name = self._deduplicate_name(other.name, **options)
                 else:
                     raise AttributeError(f'duplicate name {other.name} - aborting add_template')
             self.templates.append(other)
-            self.clusters = pd.concat([self.clusters, pd.DataFrame({'name':other.name}, index=[0])],
-                                      axis=0, ignore_index=True)
+            self.clusters = pd.concat([self.clusters, pd.DataFrame({'id_no':len(self)-1}, index=[other.name])],
+                                      axis=0, ignore_index=False)
         else:
             raise TypeError('other must be type eqcorrscan.Template')
 
@@ -154,13 +166,13 @@ class ClusteringTribe(Tribe):
                     values.append(_e)
 
         elif method == 'correlation_cluster':
-            groups = euc.cluster(self.get_template_list(), **kwargs)
+            groups = euc.cluster(self._get_template_list(), **kwargs)
             if 'save_corrmat' in kwargs.keys():
                 if kwargs['save_corrmat']:
                     self.dist_mat = np.load('dist_mat.npy')
             for _e, group in enumerate(groups):
                 for entry in group:
-                    index.append(self.templates[entry[1]])
+                    index.append(self.templates[entry[1]].name)
                     values.append(_e)
         else:
             raise ValueError(f'method {method} not supported.')
@@ -191,12 +203,12 @@ class ClusteringTribe(Tribe):
         if isinstance(names, str):
             names = [names]
         # Catch case where not all names are present
-        if set(names) <= set(self.clusters.names.values):
+        if set(names) <= set(self.clusters.index.values):
             raise ValueError('Not all provided names match templates in this ClusterTribe')
         # Proceed with making subset
         subset = self.__class__(templates = [self.select(name) for name in names])
         # Subset the clusters index
-        subset.clusters = self.clusters[self.clusters.name.isin(names)]
+        subset.clusters = self.clusters[self.clusters.index.isin(names)]
         subset.cluster_kwargs = self.cluster_kwargs
         # If there is a dist_mat, also subset that
         if self.dist_mat is not None:
@@ -230,6 +242,9 @@ class ClusteringTribe(Tribe):
         return self.get_subset(names)
 
 
+    def _get_template_list(self):
+        tl = [(self.select(name).st, row.id_no) for name, row in self.clusters.iterrows()]
+        return tl
 
 
 
