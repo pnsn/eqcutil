@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns:ns0="http://anss.org/xmlns/catalog/0.1">
-  <eventParameters publicID="smi:local/3054e94e-0fcb-45c8-a729-54653451efbc">
+  <eventParameters publicID="smi:local/9fa1930f-0444-4838-a4ba-a48c7b955bde">
     <event publicID="quakeml:uw.anss.org/Event/UW/10778993" ns0:datasource="uw" ns0:dataid="uw10778993" ns0:eventsource="uw" ns0:eventid="10778993">
       <preferredOriginID>quakeml:uw.anss.org/Origin/UW/1063298</preferredOriginID>
       <preferredMagnitudeID>quakeml:uw.anss.org/Netmag/UW/825633</preferredMagnitudeID>
@@ -149,7 +149,6 @@
           <uncertainty>0.01</uncertainty>
         </time>
         <waveformID networkCode="UW" stationCode="MBW" locationCode="" channelCode="EHZ"></waveformID>
-        <phaseHint>P</phaseHint>
         <polarity>negative</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>final</evaluationStatus>
@@ -534,7 +533,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="MBW" locationCode="" channelCode="EHZ"></waveformID>
         <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
         <polarity>negative</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -1175,20 +1173,19 @@
         <amplitudeID>quakeml:uw.anss.org/Amp/UW/14277338</amplitudeID>
         <waveformID networkCode="UW" stationCode="JCW" locationCode="" channelCode="EHZ"></waveformID>
       </stationMagnitude>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16034568">
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16111143">
         <time>
-          <value>2022-07-05T23:29:10.590000Z</value>
+          <value>2022-07-05T23:29:11.320000Z</value>
           <uncertainty>0.15</uncertainty>
         </time>
-        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
+        <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
         <creationInfo>
           <agencyID>UW</agencyID>
-          <creationTime>2022-07-06T21:19:06.000000Z</creationTime>
+          <creationTime>2022-09-01T18:15:04.000000Z</creationTime>
         </creationInfo>
       </pick>
       <pick publicID="quakeml:uw.anss.org/Arrival/UW/16111113">
@@ -1198,39 +1195,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="MBW" locationCode="01" channelCode="EHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2022-09-01T18:15:04.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16111118">
-        <time>
-          <value>2022-07-05T23:29:07.540000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2022-09-01T18:15:04.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16111123">
-        <time>
-          <value>2022-07-05T23:29:09.050000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -1246,7 +1210,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="MULN" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -1255,14 +1218,43 @@
           <creationTime>2022-09-01T18:15:04.000000Z</creationTime>
         </creationInfo>
       </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16111143">
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16111118">
         <time>
-          <value>2022-07-05T23:29:11.320000Z</value>
+          <value>2022-07-05T23:29:07.540000Z</value>
           <uncertainty>0.15</uncertainty>
         </time>
-        <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
+        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2022-09-01T18:15:04.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16034568">
+        <time>
+          <value>2022-07-05T23:29:10.590000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2022-07-06T21:19:06.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16111123">
+        <time>
+          <value>2022-07-05T23:29:09.050000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -2081,54 +2073,6 @@
         <amplitudeID>quakeml:uw.anss.org/Amp/UW/14594623</amplitudeID>
         <waveformID networkCode="CN" stationCode="VGZ" locationCode="" channelCode="HHE"></waveformID>
       </stationMagnitude>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16082153">
-        <time>
-          <value>2022-08-12T11:37:16.740000Z</value>
-          <uncertainty>0.06</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>negative</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2022-08-12T17:45:05.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16082163">
-        <time>
-          <value>2022-08-12T11:37:18.260000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2022-08-12T17:45:05.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16082178">
-        <time>
-          <value>2022-08-12T11:37:19.360000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="MULN" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2022-08-12T17:45:05.000000Z</creationTime>
-        </creationInfo>
-      </pick>
       <pick publicID="quakeml:uw.anss.org/Arrival/UW/16082188">
         <time>
           <value>2022-08-12T11:37:20.580000Z</value>
@@ -2136,7 +2080,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -2152,13 +2095,42 @@
         </time>
         <waveformID networkCode="UW" stationCode="MBW" locationCode="01" channelCode="EHZ"></waveformID>
         <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
         <polarity>negative</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
         <creationInfo>
           <agencyID>UW</agencyID>
           <creationTime>2022-12-29T20:14:39.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16082178">
+        <time>
+          <value>2022-08-12T11:37:19.360000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="MULN" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2022-08-12T17:45:05.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16082153">
+        <time>
+          <value>2022-08-12T11:37:16.740000Z</value>
+          <uncertainty>0.06</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>impulsive</onset>
+        <polarity>negative</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2022-08-12T17:45:05.000000Z</creationTime>
         </creationInfo>
       </pick>
       <pick publicID="quakeml:uw.anss.org/Arrival/UW/16267243">
@@ -2168,13 +2140,27 @@
         </time>
         <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
         <creationInfo>
           <agencyID>UW</agencyID>
           <creationTime>2022-12-29T20:14:39.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16082163">
+        <time>
+          <value>2022-08-12T11:37:18.260000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2022-08-12T17:45:05.000000Z</creationTime>
         </creationInfo>
       </pick>
       <amplitude publicID="quakeml:uw.anss.org/Amp/UW/14594623">
@@ -2740,7 +2726,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="MBW" locationCode="01" channelCode="EHZ"></waveformID>
         <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
         <polarity>positive</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -2756,24 +2741,7 @@
         </time>
         <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
         <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
         <polarity>positive</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2022-08-30T19:58:04.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16107753">
-        <time>
-          <value>2022-08-30T03:47:31.300000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
         <creationInfo>
@@ -2788,7 +2756,21 @@
         </time>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2022-08-30T19:58:04.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16107753">
+        <time>
+          <value>2022-08-30T03:47:31.300000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -3295,70 +3277,6 @@
         <amplitudeID>quakeml:uw.anss.org/Amp/UW/15222883</amplitudeID>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHE"></waveformID>
       </stationMagnitude>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654873">
-        <time>
-          <value>2023-05-22T14:34:58.610000Z</value>
-          <uncertainty>0.06</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>positive</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654883">
-        <time>
-          <value>2023-05-22T14:34:59.990000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654893">
-        <time>
-          <value>2023-05-22T14:35:01.700000Z</value>
-          <uncertainty>0.06</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>negative</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654898">
-        <time>
-          <value>2023-05-22T14:35:00.900000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="MULN" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
-        </creationInfo>
-      </pick>
       <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654908">
         <time>
           <value>2023-05-22T14:35:02.300000Z</value>
@@ -3366,7 +3284,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -3382,13 +3299,72 @@
         </time>
         <waveformID networkCode="UW" stationCode="MBW" locationCode="01" channelCode="EHZ"></waveformID>
         <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
         <polarity>negative</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
         <creationInfo>
           <agencyID>UW</agencyID>
           <creationTime>2023-10-24T05:07:17.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654898">
+        <time>
+          <value>2023-05-22T14:35:00.900000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="MULN" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654873">
+        <time>
+          <value>2023-05-22T14:34:58.610000Z</value>
+          <uncertainty>0.06</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>impulsive</onset>
+        <polarity>positive</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654893">
+        <time>
+          <value>2023-05-22T14:35:01.700000Z</value>
+          <uncertainty>0.06</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>impulsive</onset>
+        <polarity>negative</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16654883">
+        <time>
+          <value>2023-05-22T14:34:59.990000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2023-10-13T02:11:27.000000Z</creationTime>
         </creationInfo>
       </pick>
       <amplitude publicID="quakeml:uw.anss.org/Amp/UW/15222853">
@@ -4027,6 +4003,21 @@
         <amplitudeID>quakeml:uw.anss.org/Amp/UW/15033908</amplitudeID>
         <waveformID networkCode="UW" stationCode="DONK" locationCode="" channelCode="HHE"></waveformID>
       </stationMagnitude>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16542063">
+        <time>
+          <value>2023-08-20T04:32:18.420000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2023-08-24T01:03:09.000000Z</creationTime>
+        </creationInfo>
+      </pick>
       <pick publicID="quakeml:uw.anss.org/Arrival/UW/16542023">
         <time>
           <value>2023-08-20T04:32:12.420000Z</value>
@@ -4034,7 +4025,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="MBW" locationCode="01" channelCode="EHZ"></waveformID>
         <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
         <polarity>positive</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -4050,7 +4040,21 @@
         </time>
         <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2023-08-24T01:03:09.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16542058">
+        <time>
+          <value>2023-08-20T04:32:17.700000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -4066,40 +4070,7 @@
         </time>
         <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
         <onset>impulsive</onset>
-        <phaseHint>P</phaseHint>
         <polarity>positive</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2023-08-24T01:03:09.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16542058">
-        <time>
-          <value>2023-08-20T04:32:17.700000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2023-08-24T01:03:09.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16542063">
-        <time>
-          <value>2023-08-20T04:32:18.420000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
         <creationInfo>
@@ -4767,30 +4738,13 @@
         <amplitudeID>quakeml:uw.anss.org/Amp/UW/15531378</amplitudeID>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHE"></waveformID>
       </stationMagnitude>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16878768">
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16878788">
         <time>
-          <value>2024-01-30T22:42:37.640000Z</value>
-          <uncertainty>0.3</uncertainty>
+          <value>2024-01-30T22:42:41.860000Z</value>
+          <uncertainty>0.15</uncertainty>
         </time>
-        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
+        <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-03-05T00:15:38.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16878773">
-        <time>
-          <value>2024-01-30T22:42:39.470000Z</value>
-          <uncertainty>0.3</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -4806,7 +4760,21 @@
         </time>
         <waveformID networkCode="UW" stationCode="MULN" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2024-03-05T00:15:38.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16878768">
+        <time>
+          <value>2024-01-30T22:42:37.640000Z</value>
+          <uncertainty>0.3</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -4822,7 +4790,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -4831,14 +4798,13 @@
           <creationTime>2024-03-05T00:15:38.000000Z</creationTime>
         </creationInfo>
       </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16878788">
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/16878773">
         <time>
-          <value>2024-01-30T22:42:41.860000Z</value>
-          <uncertainty>0.15</uncertainty>
+          <value>2024-01-30T22:42:39.470000Z</value>
+          <uncertainty>0.3</uncertainty>
         </time>
-        <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -5493,39 +5459,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-06-14T22:17:02.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17100543">
-        <time>
-          <value>2024-06-14T20:26:01.830000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-06-14T22:17:02.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17100548">
-        <time>
-          <value>2024-06-14T20:26:03.430000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -5541,7 +5474,36 @@
         </time>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2024-06-14T22:17:02.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17100548">
+        <time>
+          <value>2024-06-14T20:26:03.430000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2024-06-14T22:17:02.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17100543">
+        <time>
+          <value>2024-06-14T20:26:01.830000Z</value>
+          <uncertainty>0.15</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -6116,39 +6078,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="SHUK" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-06-23T19:15:00.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17120433">
-        <time>
-          <value>2024-06-21T13:12:16.030000Z</value>
-          <uncertainty>0.3</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-06-23T19:15:00.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17120438">
-        <time>
-          <value>2024-06-21T13:12:17.600000Z</value>
-          <uncertainty>0.3</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -6164,7 +6093,36 @@
         </time>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2024-06-23T19:15:00.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17120438">
+        <time>
+          <value>2024-06-21T13:12:17.600000Z</value>
+          <uncertainty>0.3</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2024-06-23T19:15:00.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17120433">
+        <time>
+          <value>2024-06-21T13:12:16.030000Z</value>
+          <uncertainty>0.3</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -6931,54 +6889,6 @@
         <amplitudeID>quakeml:uw.anss.org/Amp/UW/15892323</amplitudeID>
         <waveformID networkCode="UW" stationCode="JCW" locationCode="" channelCode="EHZ"></waveformID>
       </stationMagnitude>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17177223">
-        <time>
-          <value>2024-07-19T10:44:31.040000Z</value>
-          <uncertainty>0.3</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-07-19T20:03:41.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17177228">
-        <time>
-          <value>2024-07-19T10:44:35.230000Z</value>
-          <uncertainty>0.15</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>S</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-07-19T20:03:41.000000Z</creationTime>
-        </creationInfo>
-      </pick>
-      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17177233">
-        <time>
-          <value>2024-07-19T10:44:31.930000Z</value>
-          <uncertainty>0.3</uncertainty>
-        </time>
-        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
-        <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
-        <polarity>undecidable</polarity>
-        <evaluationMode>manual</evaluationMode>
-        <evaluationStatus>reviewed</evaluationStatus>
-        <creationInfo>
-          <agencyID>UW</agencyID>
-          <creationTime>2024-07-19T20:03:41.000000Z</creationTime>
-        </creationInfo>
-      </pick>
       <pick publicID="quakeml:uw.anss.org/Arrival/UW/17177238">
         <time>
           <value>2024-07-19T10:44:32.180000Z</value>
@@ -6986,7 +6896,6 @@
         </time>
         <waveformID networkCode="UW" stationCode="MULN" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
@@ -7002,7 +6911,36 @@
         </time>
         <waveformID networkCode="UW" stationCode="RPW2" locationCode="" channelCode="HHZ"></waveformID>
         <onset>emergent</onset>
-        <phaseHint>P</phaseHint>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2024-07-19T20:03:41.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17177233">
+        <time>
+          <value>2024-07-19T10:44:31.930000Z</value>
+          <uncertainty>0.3</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="PASS" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
+        <polarity>undecidable</polarity>
+        <evaluationMode>manual</evaluationMode>
+        <evaluationStatus>reviewed</evaluationStatus>
+        <creationInfo>
+          <agencyID>UW</agencyID>
+          <creationTime>2024-07-19T20:03:41.000000Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="quakeml:uw.anss.org/Arrival/UW/17177223">
+        <time>
+          <value>2024-07-19T10:44:31.040000Z</value>
+          <uncertainty>0.3</uncertainty>
+        </time>
+        <waveformID networkCode="UW" stationCode="SAXON" locationCode="" channelCode="HHZ"></waveformID>
+        <onset>emergent</onset>
         <polarity>undecidable</polarity>
         <evaluationMode>manual</evaluationMode>
         <evaluationStatus>reviewed</evaluationStatus>
