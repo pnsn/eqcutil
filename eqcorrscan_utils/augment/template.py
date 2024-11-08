@@ -6,7 +6,7 @@
 
 """
 
-import copy, logging, os
+import copy, logging, os, fnmatch
 from pathlib import Path
 
 Logger = logging.getLogger(__name__)
@@ -59,6 +59,27 @@ def rename_templates(tribe, include_contributor=True, inplace=True):
         template.name = name
     return tribe
 
+
+def deduplicate_names(templates):
+    uuid = []
+    modified = []
+    for _t in templates:
+        if _t.name not in uuid:
+            uuid.append(_t.name)
+        else:
+            if '__' in _t.name:
+                basename = _t.name.split('__')[0]
+            else:
+                basename = _t.name
+            
+            matches = fnmatch.filter(uuid, basename+'*')
+            _e = 0
+            while f'{basename}__{_e}' in matches:
+                _e += 1
+            _t.name = f'{basename}__{_e}'
+            uuid.append(_t.name)
+            modified.append(_t.name)
+    return templates    
 
 def augment_template(template, client, padding= 120., min_ncomponents=3):
     """Retrieve additional waveform data for missing channels  for each 
