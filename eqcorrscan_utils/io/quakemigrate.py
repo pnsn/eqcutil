@@ -43,7 +43,7 @@ EVENT_FILE_COLS = [
 ]
 
 PICK_FILE_COLS = [
-    "Name",
+    "Station",
     "Phase",
     "ModelledTime",
     "PickTime",
@@ -51,8 +51,28 @@ PICK_FILE_COLS = [
     "SNR"
 ]
 
+# TODO: Make a stream formatter that accepts and Inventory as an input
 
-def  quakemigrate2cat(event_files, pick_files):
+def stream_id_formatter(phase, station, network='UW', location='', phase_mapping={'P':'HHZ','S':'HHN'}):
+    """Given the Phase and Station values from a row in a *.pick file,
+    reconstitute a SEED channel ID string
+
+    :param phase: phase name
+    :type phase: str
+    :param station: station name
+    :type station: str
+    :param network: default network code, defaults to 'UW'
+    :type network: str, optional
+    :param location: default location code, defaults to ''
+    :type location: str, optional
+    :param phase_mapping: phase to channel code mapping, defaults to {'P':'HHZ','S':'HHN'}
+    :type phase_mapping: dict, optional
+    :return: SEED channel ID
+    :rtype: str
+    """    
+    return '%s.%s.%s.%s'%(network, station, location, phase_mapping[phase])
+
+def  quakemigrate2cat(event_files, pick_files, hyp_type='max', stream_id_formatter=stream_id_formatter):
     """Convert the output *.event and *.pick files from a QuakeMigrate
     run into an ObsPy :class:`~obspy.core.event.Catalog` object that
     has the necessary pick/arrival referencing and phase name / hint
@@ -64,6 +84,11 @@ def  quakemigrate2cat(event_files, pick_files):
     :type event_files: list or str
     :param pick_file: name(s) of *.pick file from QuakeMigrate to convert
     :type pick_file: list or str
+    :param hyp_type: hypocentral parameter estimate type to use, defaults to 'max'.
+        Supported Values:
+         - 'max' -- uses the X,Y,Z values for longitude, latitude, and depth, respectively
+         - 'gau' -- uses GAU_X, GAU_Y, GAU_Z values for hypocentral parameters
+    :type hyp_type: str, optional.
 
     :return: catalog-formatted event metadata
     :rtype: obspy.core.event.Catalog
@@ -113,11 +138,11 @@ def  quakemigrate2cat(event_files, pick_files):
         Logger.critical(f'pick_files type {type(pick_files)} not supported. Must be str or list of str')    
     
 
-    cat = _qm2cat_inner_process(df_e, df_p)
+    cat = _qm2cat_inner_process(df_e, df_p, hyp_type=hyp_type, formatter=stream_id_formatter)
 
     return cat
 
-def _qm2cat_inner_process(df_e, df_p):
+def _qm2cat_inner_process(df_e, df_p, hyp_type='max', formatter=stream_id_formatter):
     """PRIVATE METHOD
 
     Inner method for converting pre-read & format checked
@@ -128,6 +153,12 @@ def _qm2cat_inner_process(df_e, df_p):
     :type df_e: pandas.DataFrame
     :param df_p: pick dataframe
     :type df_p: pandas.DataFrame
+    :param hyp_type: type of hypocentral solution estimate to use, 
+        defaults to 'max'
+        Supported Values:
+        - 'max': uses X, Y, Z from *.event
+        - 'gau': uses GAU_X, GAU_Y, GAU_Z from *.event
+    :type hyp_type: str, optional
     :return: catalog object
     :rtype: obspy.core.event.Catalog
     """    
@@ -135,6 +166,9 @@ def _qm2cat_inner_process(df_e, df_p):
         Logger.critical('df_e must be type pandas.DataFrame')
     if not isinstance(df_p, pd.DataFrame):
         Logger.critical('df_p must be type pandas.DataFrame')
+
+    if hyp_type.lower() not in ['max','gau']:
+        Logger.critical(f'hyp_type {hyp_type} not supported.')
 
     # Check if any of the events have local magnitude estimates
     if 'ML' in df_e.columns:
@@ -162,10 +196,15 @@ def _qm2cat_inner_process(df_e, df_p):
         origin = Origin()
         # Populate best-estimate hypocenter
         origin.time = UTCDateTime(erow.origin_time)
-        origin.latitude = erow.Y
-        origin.longitude = erow.X
-        # TODO: Confirm that QM saves depths as km
-        origin.depth = erow.Z*1e3
+        if hyp_type.lower() == 'max':
+            origin.latitude = erow.Y
+            origin.longitude = erow.X
+            origin.depth = erow.Z
+        elif hyp_type.lower() == 'gau': 
+            origin.latitude = erow.GAU_Y
+            origin.longitude = erow.GAU_X
+            origin.depth = erow.GAU_Z
+
 
         # TODO: Add uncertainties (need to do coordinate conversions)
 
@@ -192,9 +231,10 @@ def _qm2cat_inner_process(df_e, df_p):
         # Populate Picks and Arrivals
         for _, prow in idf_picks.iterrows():
             # Create pick
+            seed_id = formatter(prow.Phase, prow.Station)
             pick = Pick(time = UTCDateTime(prow.PickTime),
                         time_errors = prow.PickError,
-                        waveform_id = WaveformStreamID(seed_string=prow.Name),
+                        waveform_id = WaveformStreamID(seed_string=seed_id),
                         evaluation_mode = 'automatic',
                         phase_hint=prow.Phase)
             # Create arrival that references pick and has travel time uncertainty
