@@ -112,6 +112,7 @@ class TestClusteringTribe(unittest.TestCase):
         self.assertEqual(self.ctribe.dist_mat.shape, (len(self.ctribe), len(self.ctribe)))
         # Assert that kwargs are saved
         self.assertEqual(self.ctribe.cluster_kwargs['correlation_cluster'], kwargs)
+        os.remove(Path().cwd()/'dist_mat.npy')
 
 
 
