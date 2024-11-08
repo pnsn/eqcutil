@@ -5,11 +5,13 @@ import pandas as pd
 from obspy.clients.fdsn import Client
 from eqcorrscan import Tribe, Template
 
+from eqcutil.augment.template import rename_templates
 from eqcutil.core.clusteringtribe import ClusteringTribe
 
 class TestClusteringTribe(unittest.TestCase):
     cwd = Path(__file__).parent
     TRIBE = Tribe().read(os.path.join(cwd, 'basic_tribe.tgz'))
+    TRIBE = rename_templates(TRIBE)
 
     def setUp(self):
         self.ctribe = ClusteringTribe()
@@ -34,6 +36,10 @@ class TestClusteringTribe(unittest.TestCase):
         self.assertIn(self.ctribe[0].name, self.ctribe.clusters.name.values)
 
     def test_add_template_duplicate(self):
-        self.ctribe.add_template(self.tribe[0])
+        self.ctribe.add_template(self.tribe[0].copy())
         with self.assertRaises(AttributeError):
-            self.ctribe.add_template(self.tribe[0], rename_duplicates=False)
+            self.ctribe.add_template(self.tribe[0].copy(), rename_duplicates=False)
+        self.ctribe.add_template(self.tribe[0], rename_duplicates=True)
+        self.assertEqual(len(self.ctribe), 2)
+        self.assertEqual(self.ctribe[0].name + '__0', self.ctribe[1].name)
+    

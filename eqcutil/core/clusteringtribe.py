@@ -89,23 +89,23 @@ class ClusteringTribe(Tribe):
             Logger.warning(f'type of other does not conform with ClusteringTribe.extend')
 
     def _deduplicate_name(self, other, delimiter='__', start=0):
-        if other not in self.clusters.template.values:
+        if other not in self.clusters.name.values:
             return other
         else:
             if delimiter not in other:
                 basename = other
             else:
                 basename = other.split('__')[0]
-            matches = fnmatch.filter(self.clusters.template.values, basename+'*')
+            matches = fnmatch.filter(self.clusters.name.values, basename+'*')
             while f'{basename}{delimiter}{start}' in matches:
                 start += 1
             return f'{basename}{delimiter}{start}'
 
-    def add_template(self, other, rename_duplicates=False):
+    def add_template(self, other, rename_duplicates=False, **options):
         if isinstance(other, Template):
-            if other.name in self.clusters.name:
+            if other.name in self.clusters.name.values:
                 if rename_duplicates:
-                    other.name = self._deduplicate_name(other.name)
+                    other.name = self._deduplicate_name(other.name, **options)
                 else:
                     raise AttributeError(f'duplicate name {other.name} - aborting add_template')
             self.templates.append(other)
