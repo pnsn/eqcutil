@@ -19,8 +19,6 @@ from eqcorrscan_utils.visualize.snuffler import plant
 Logger = logging.getLogger(__name__)
 
 
-# def corr_cluster(self, corr_thresh=0.3, shift_len=1., allow_individual_trace)
-
 class ClusteringTribe(Tribe):
     """An augmentation of the :class:`~eqcorrscan.Tribe` class that
     extends EQcorrscan clustering and stacking class-methods beyond
@@ -28,8 +26,17 @@ class ClusteringTribe(Tribe):
 
     """    
     def __init__(self, templates=[], use_evid_names=False, **options):
+        """Initialize a Tribe object
+
+        :param templates: _description_, defaults to []
+        :type templates: list, optional
+        :param use_evid_names: _description_, defaults to False
+        :type use_evid_names: bool, optional
+        :raises TypeError: _description_
+        """
+        # If eqc_compat.plant() has not been run, do it now      
         if not hasattr(Tribe,'snuffle'):
-            plant()
+            eqc_compat.plant()
         if isinstance(templates, Template):
             templates = [templates]
         elif isinstance(templates, list):
@@ -51,6 +58,7 @@ class ClusteringTribe(Tribe):
 
         self.clusters = {}
         self.stacks = {}
+        self.dist_mat = None
         self.cluster_kwargs = {}
         self.stack_kwargs = {}
 
@@ -94,7 +102,10 @@ class ClusteringTribe(Tribe):
         """Extended wrapper for EQcorrscan Template correlation methods
         In addition to the original options of clustering using catalog
         methods (space_cluster and (space_time_cluster) this method now
-        also permits use of :meth:`~
+        also permits use of :meth:`~eqcorrscan.util.clustering.cluster`
+        under the method name `correlation_cluster`. Groups are saved
+        to the **clusters** and **cluster_kwargs** attributes, which are
+        dictionaries keyed by 
 
         :param method: _description_
         :type method: _type_
@@ -104,6 +115,11 @@ class ClusteringTribe(Tribe):
         elif method == 'correlation_cluster':
             groups = euc.cluster(self.get_template_list(), **kwargs)
             tribes = []
+            if 'save_corrmat' in kwargs.keys():
+                if kwargs['save_corrmat']:
+                    self.dist_mat = pd.DataFrame(np.load('dist_mat.npy'),
+                                                 index=[_t.name for _t in self],
+                                                 columns=[_t.name for _t in self]
             for group in groups:
                 templates = []
                 for entry in group:
@@ -284,6 +300,10 @@ class ClusteringTribe(Tribe):
                 self.cluster_kwargs[ctype].update({_k, _r.values[0]})
                 
         return
+
+    def select_cluster(self, cluster_type, cluster_number):
+    
+
 
     # def corr_cluster(self, savedir='cluster_results', show=False, corr_thresh=0.3,
     #             shift_len=1., allow_individual_trace_shifts=False, dist_nan_fill=None,
