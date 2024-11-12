@@ -2,12 +2,14 @@ name: eqcutil
 channels:
  - default
  - conda-forge
- - pyrocko
  - apple
 dependencies:
  - python=3.10
  - scipy
  - pandas
- - pyrocko
  - eqcorrscan
  - ipython
+ - pyqt
+ - pyqtwebengine
+ - pip:
+    - pyrocko
