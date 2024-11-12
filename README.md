@@ -1,4 +1,4 @@
-# eqcorrscan_utils
+# eqcutil
 Flexible methods that support use of the waveform cross correlation package "EQcorrscan" for a range of projects at the [PNSN](https://pnsn.org).
 
 # Authors  
@@ -8,44 +8,20 @@ This repository is abstracted from workflows written by N. Stevens and B. Johnso
 ![image](./docs/images/gplv3-with-text-136x68.png)  
 This repository is distributed under the attached GNU General Public License v3
 
-# Structure  
-The python methods in this repository are roughly grouped by their intended purpose
-which can spread in a number of different directions depending on what the user wants
-to accomplish. The current structure follows:
+# Installing with Conda
 
-## eqcorrscan_utils  
- - augment -- methods that modify ObsPy `Catalog` and EQcorrscan `Template` objects  
- - client -- lightweight wrappers around the `EventBank` and `WaveBank` classes from `ObsPlus`  
- - io -- methods for converting other metadata formats into ObsPy `Catalog` objects  
- - process -- methods wrapping core `EQcorrscan` processes  
- - util -- utilities for the utilities! Helpful other tools (e.g., setting up a Logger instance)  
- - visualize -- methods to help visualize `EQcorrscan` objects and outputs  
-
-# Installing Prerequisites with Conda
-Current installation (particularly on Apple Silicon) seems to require
-a pre-installation of `scipy` and `eqcorrscan` to comple correctly
-
-1) Create a `conda` environment  
-```conda env create -n eqc_util```  
-2) Activate environment  
-```conda activate eqc_util``` 
-3) Pre-install dependencies  
-```conda install python=3.9 scipy```  
-4) Pre-install `eqcorrscan` per their `conda` instructions  
-```conda install -c conda-forge eqcorrscan```  
-
-## Installation with PIP
+1) Clone this repository  
 ```
-conda install git
-pip install git+https://github.com/pnsn.eqcorrscan_utils.git
-```  
-## Installation from Source
-```git clone https://github.com/pnsn.eqcorrscan_utils.git```
-```python -m pip install .```
-
-## Added Flavor
-Install optional development environment(s), e.g.,  
-```conda install ipython```  
+git clone https://github.com/pnsn/eqcutil.git
+```
+2) Use the provided `environment.yml` to create a `conda` environment  
+```
+conda env create -f environment.yml
+```
+3) Install `eqcutil` using `pip` backend from the root directory of this repo  
+```
+python -m pip install .
+```
 
 # Dependencies & Attribution
 This repository build on the following open-source python projects:  
