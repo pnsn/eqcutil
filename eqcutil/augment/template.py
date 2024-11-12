@@ -144,12 +144,13 @@ def augment_template(template, client, padding= 120., min_ncomponents=3):
                             tr.resample(template.samp_rate, no_filter=False)
                         elif tr.stats.sampling_rate < template.samp_rate:
                             Logger.info(f'upsampling new trace to match template: {tr.id} {tr.stats.sampling_rate} -> {template.samp_rate}')
-                            tr.interpolate(method='laczos')
+                            breakpoint()
+                            tr.interpolate(template.samp_rate)
                         else:
                             pass
                         Logger.info(f'Bandpass filtering new trace to match template preprocessing')
                         tr.filter('bandpass',
-                                  freqmin = template.lowcut,
+                                  freqmin=template.lowcut,
                                   freqmax=template.highcut,
                                   corners=template.filt_order)
                         tr.trim(starttime=t0, endtime=t1)
