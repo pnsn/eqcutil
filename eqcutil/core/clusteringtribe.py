@@ -166,10 +166,21 @@ class ClusteringTribe(Tribe):
                     values.append(_e)
 
         elif method == 'correlation_cluster':
+            if 'save_corrmat' in kwargs.keys():
+                if not kwargs['save_corrmat']:
+                    save_local = False
+                    kwargs['save_corrmat'] = True
+                else:
+                    save_local = True
+            else:
+                kwargs.update({'save_corrmat': True})
+                save_local = False
+
             groups = euc.cluster(self._get_template_list(), **kwargs)
             if 'save_corrmat' in kwargs.keys():
-                if kwargs['save_corrmat']:
-                    self.dist_mat = np.load('dist_mat.npy')
+                self.dist_mat = np.load('dist_mat.npy')
+                if not save_local:
+                    os.remove('dist_mat.npy')
             for _e, group in enumerate(groups):
                 for entry in group:
                     index.append(self.templates[entry[1]].name)
@@ -312,19 +323,20 @@ class ClusteringTribe(Tribe):
                 os.path.join(dirname, '{0}.ms'.format(template.name)),
                 format='MSEED')
         # ADDED BY NTS - write clustering summary to disk
-        self.summary.to_csv(os.path.join(dirname,'clusters.csv'), header=True, index=True)
+        self.clusters.to_csv(os.path.join(dirname,'clusters.csv'), header=True, index=True)
 
         # Write clustering kwargs to disk
-        for _k, _v in self.cluster_kwargs:
+        for _k, _v in self.cluster_kwargs.items():
             with open(os.path.join(dirname, f'{_k}_kwargs.csv'), 'w') as file:
-                for _l, _w in _v:
+                for _l, _w in _v.items():
                     if isinstance(_w, str):
                         file.write(f'{_l},{_w}\n')
                     else:
                         file.write(f'{_l},{repr(_w)}\n')
         if self.dist_mat is not None:
-            np.save(os.path.join(dirname,'dist_mat.npy'), np.array(self.dist_mat.values))
+            np.save(os.path.join(dirname,'dist_mat.npy'), np.array(self.dist_mat))
 
+        # Run compression if specified
         if compress:
             if not filename.endswith(".tgz"):
                 Logger.info("Appending '.tgz' to filename.")
@@ -368,7 +380,7 @@ class ClusteringTribe(Tribe):
             self._read_from_folder(dirname=tribe_dir)
         shutil.rmtree(temp_dir)
         # Assign unique ids
-        self.__unique_ids()
+        # self.__unique_ids()
         return self
 
     def _read_from_folder(self, dirname):
@@ -417,16 +429,21 @@ class ClusteringTribe(Tribe):
         self.templates.extend(templates)
 
         # Re-constitute groups
-        clusters = pd.read_csv(cluster_file, index_col=[0])
-        # Remove lines that don't match loaded templates
-        clusters = clusters[clusters.index.isin([_t.name for _t in templates])]
-        if set(clusters.index.values) == {_t.name for _t in templates}:
-            if self.clusters is None:
-                self.clusters = clusters
-            else:
-                self.clusters = pd.concat([self.clusters, clusters], axis=0, ignore_index=False)
+        if len(cluster_file) != 0:
+            clusters = pd.read_csv(cluster_file[0], index_col=[0])
         else:
-            Logger.error('cluster_group file names loaded do not match template names loaded')
+            clusters = pd.DataFrame()
+        # Remove lines that don't match loaded templates
+        if len(clusters) != 0:
+            clusters = clusters[clusters.index.isin([_t.name for _t in templates])]
+
+            if set(clusters.index.values) == {_t.name for _t in templates}:
+                if self.clusters is None:
+                    self.clusters = clusters
+                else:
+                    self.clusters = pd.concat([self.clusters, clusters], axis=0, ignore_index=False)
+            else:
+                Logger.error('cluster_group file names loaded do not match template names loaded')
 
         # Reconstitute processing information
         for ckf in cluster_kwarg_files:
@@ -434,9 +451,9 @@ class ClusteringTribe(Tribe):
             name, ext = os.path.splitext(name)
             ctype = name[:-7]
             self.cluster_kwargs.update({ctype: {}})
-            df = pd.read_csv(ckf, index_col=[0])
+            df = pd.read_csv(ckf, index_col=[0], header=None)
             for _k, _r in df.iterrows():
-                self.cluster_kwargs[ctype].update({_k, _r.values[0]})
+                self.cluster_kwargs[ctype].update({_k: _r.values[0]})
                 
         return
 
