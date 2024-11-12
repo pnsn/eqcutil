@@ -53,12 +53,6 @@ def apply_phase_hints(catalog):
                 Logger.warning(msg)
     return catalog
 
-def filter_picks(**kwargs):
-    return filter_picks(**kwargs)
-
-def catalog_cluster(**kwargs):
-    return catalog_cluster(**kwargs)
-
 # def filter_picks(catalog, stations=None, channels=None, networks=None,
 #                  locations=None, top_n_picks=None, evaluation_mode='all',
 #                  phase_hints=None, enforce_single_pick=False,
