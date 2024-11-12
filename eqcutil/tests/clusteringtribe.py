@@ -23,7 +23,6 @@ class TestClusteringTribe(unittest.TestCase):
         del self.ctribe
         del self.tribe
 
-
     def test___init__(self):
         self.assertIsInstance(self.ctribe, Tribe)
         self.assertIsInstance(self.ctribe, ClusteringTribe)
