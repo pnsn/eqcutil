@@ -144,7 +144,6 @@ def augment_template(template, client, padding= 120., min_ncomponents=3):
                             tr.resample(template.samp_rate, no_filter=False)
                         elif tr.stats.sampling_rate < template.samp_rate:
                             Logger.info(f'upsampling new trace to match template: {tr.id} {tr.stats.sampling_rate} -> {template.samp_rate}')
-                            breakpoint()
                             tr.interpolate(template.samp_rate)
                         else:
                             pass
