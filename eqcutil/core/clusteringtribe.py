@@ -325,7 +325,7 @@ class ClusteringTribe(Tribe):
             output = pd.Series(data=indices, index=self.clusters.index, name='correlation_cluster')
             return output
         
-    def dendrogram(self, corr_thresh=None, **kwargs):
+    def dendrogram(self, xlabelfield='id_no', corr_thresh=None, **kwargs):
         """Wrapper for :meth:`~scipy.cluster.hierarchy.dendrogram` that uses
         saved attribute values from a running :meth:`~.ClusteringTribe.cluster`
         with method='correlation_cluster' to produce a dendrogram plot
@@ -357,6 +357,14 @@ class ClusteringTribe(Tribe):
         else:
             ax = kwargs['ax']
         
+        if xlabelfield in self.clusters.columns:
+            xlvalues = self.clusters[xlabelfield].values
+            
+        elif xlabelfield == 'index':
+            xlvalues = self.clusters.index.values
+        else:
+            xlvalues = None
+
         kwargs.update({'color_threshold': threshold})
         if 'distance_sort' not in kwargs.keys():
             kwargs.update({'distance_sort': 'ascending'})
@@ -367,9 +375,22 @@ class ClusteringTribe(Tribe):
             title = ''
 
         R = dendrogram(Z, **kwargs)
-        ax.set_xlabel('id_no')
+
+        if not xlvalues is None:
+            newlabels = []
+            for _txt in ax.get_xticklabels():
+                ind = int(_txt.get_text())
+                newlabel = xlvalues[ind]
+                newlabels.append(newlabel)
+            ax.set_xticklabels(newlabels)
+            ax.set_xlabel(xlabelfield)
+        else:
+            ax.set_xlabel('Entry Number')
         ax.set_ylabel('Linkage Distance\n[1 - corr]')
         ckw = self.cluster_kwargs['correlation_cluster']
+
+
+        
 
         title += f'Fill Value: {ckw["replace_nan_distances_with"]} | '
         title += f'Corr Thresh: {1 - threshold} | Shift Length: {ckw["shift_len"]} sec'
