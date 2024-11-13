@@ -10,13 +10,17 @@
 :attribution: This builds on the EQcorrscan project. If you find this class
     useful please be sure to cite both EQcorrscan (e.g., Chamberlain et al., 2017)
     and perhaps this repository as well.
+
+    TODO: provide an option to just save the paths to the source templates
+    TODO: change `self.clusters` to `self.index`
 """
 import os, logging, tarfile, shutil, pickle, tempfile, glob, fnmatch
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.spatial.distance import squareform
 from obspy import read_events, read
 from obspy.core.event import Catalog
 from eqcorrscan import Tribe, Template
@@ -258,6 +262,115 @@ class ClusteringTribe(Tribe):
         return tl
 
 
+    def _get_linkage(self, **kwargs):
+        """Perform hierarchical/agglomerative clustering on the templates in this
+        Cluster
+
+        :return:
+         - **Z** (*numpy.ndarray*) -- linkage matrix
+        """        
+        if 'correlation_cluster' not in self.clusters.columns:
+            Logger.critical(f'correlation clustering has not been run on this ClusteringTribe')
+        else:
+            ckw = self.cluster_kwargs['correlation_cluster']
+        if self.dist_mat is None:
+            Logger.critical('dist_mat not populated')
+        else:
+            # Get linkage inputs
+            rndw = ckw['replace_nan_distances_with']
+            for _k, _v in [('method','single'), ('metric', 'euclidian'), ('optimal_ordering', False)]:
+                if _k in ckw.keys() and _k not in kwargs.keys():
+                    kwargs.update({_k: ckw[_k]})
+                else:
+                    kwargs.update({_k: _v})
+
+            dm = self.dist_mat
+            # Apply fill
+            dist_mat = euc.handle_distmat_nans(dm, rndw)
+            # Vectorize
+            dist_vect = squareform(dist_mat)
+            # Recalculate linkage
+            Z = linkage(dist_vect, **kwargs)
+            return Z
+
+    def _cct_regroup(self, corr_thresh, **kwargs):
+        """Regroup cross-correlated templates at a different correlation
+        threshold with options to re-define the linkage parameterization
+    
+        :param corr_thresh: template cross correlation threshold for grouping,
+            must be a value in 0 < corr_thresh < 1
+        :type corr_thresh: float
+        :return: _description_
+        :rtype: _type_
+        """        
+        if 'correlation_cluster' not in self.clusters.columns:
+            Logger.critical(f'correlation clustering has not been run on this ClusteringTribe')
+        else:
+            ckw = self.cluster_kwargs['correlation_cluster']
+
+        Z = self._get_linkage(**kwargs)
+
+        if not isinstance(corr_thresh, float):
+            Logger.critical(f'corr_thresh must be type float')
+        elif not 0 < corr_thresh <= 1:
+            Logger.critical(f'corr_thresh must be in (0, 1)')
+        
+        if corr_thresh == ckw['corr_thresh']:
+            Logger.info(f'Already grouped for corr_thresh={corr_thresh}')
+            return self.clusters['correlation_cluster']
+        else:
+            # Get new grouping
+            indices = euc.fcluster(Z, t= 1 - corr_thresh, criterion='distance')
+        
+            output = pd.Series(data=indices, index=self.clusters.index, name='correlation_cluster')
+            return output
+        
+    def dendrogram(self, corr_thresh=None, **kwargs):
+        """Wrapper for :meth:`~scipy.cluster.hierarchy.dendrogram` that uses
+        saved attribute values from a running :meth:`~.ClusteringTribe.cluster`
+        with method='correlation_cluster' to produce a dendrogram plot
+
+        :param corr_thresh: correlation threshold to use for defining clusters,
+            displayed cutoffs are defaults to None
+        :type corr_thresh: _type_, optional
+        :return: _description_
+        :rtype: _type_
+        """        
+        if 'correlation_cluster' not in self.clusters.columns:
+            Logger.critical(f'correlation clustering has not been run on this ClusteringTribe')
+        
+        lkwargs = {}
+        for _k, _v in kwargs.items():
+            if _k in ['method','metric','optimal_ordering']:
+                lkwargs.update({_k, kwargs.pop(_k)})
+
+        Z = self._get_linkage(**lkwargs)
+        if corr_thresh is None:
+            threshold = 1 - self.cluster_kwargs['correlation_cluster']['corr_thresh']
+        else:
+            threshold = 1 - corr_thresh
+
+        if 'ax' not in kwargs.keys():
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            kwargs.update({'ax': ax})
+        
+        kwargs.update({'color_threshold': threshold})
+        if 'distance_sort' not in kwargs.keys():
+            kwargs.update({'distance_sort': 'ascending'})
+
+        R = dendrogram(Z, **kwargs)
+        ax.set_xlabel('id_no')
+        ax.set_ylabel('Linkage Distance\n[1 - corr]')
+        ckw = self.cluster_kwargs['correlation_cluster']
+        title = f'Fill Value: {ckw["replace_nan_distances_with"]}\n'
+        title += f'Corr Thresh: {1 - threshold} | Shift Length: {ckw["shift_len"]} sec'
+        ax.set_title(title)
+        return R
+
+
+
+
 
     def write(self, filename, compress=True, catalog_format="QUAKEML"):
         """
@@ -400,12 +513,13 @@ class ClusteringTribe(Tribe):
         # NEW - clustering kwargs file
         cluster_kwarg_files = glob.glob(os.path.join(dirname,'*_kwargs.csv'))
         # NEW - distance matrix file
-
+        dist_mat_file = glob.glob(os.path.join(dirname, 'dist_mat.npy'))
         # Load catalog if it is present
         if len(tribe_cat_file) != 0:
             tribe_cat = read_events(tribe_cat_file[0])
         else:
             tribe_cat = Catalog()
+
         # Load templates with new names
         previous_template_names = [t.name for t in self.templates]
         for template in templates:
@@ -433,6 +547,7 @@ class ClusteringTribe(Tribe):
             clusters = pd.read_csv(cluster_file[0], index_col=[0])
         else:
             clusters = pd.DataFrame()
+
         # Remove lines that don't match loaded templates
         if len(clusters) != 0:
             clusters = clusters[clusters.index.isin([_t.name for _t in templates])]
@@ -453,8 +568,28 @@ class ClusteringTribe(Tribe):
             self.cluster_kwargs.update({ctype: {}})
             df = pd.read_csv(ckf, index_col=[0], header=None)
             for _k, _r in df.iterrows():
-                self.cluster_kwargs[ctype].update({_k: _r.values[0]})
+                _r = _r.values[0]
+                if _r == 'True':
+                    _r = True
+                elif _r == 'False':
+                    _r = False
+                else:
+                    try:
+                        float(_r)
+                        _r = float(_r)
+                    except ValueError:
+                        pass
+                self.cluster_kwargs[ctype].update({_k: _r})
+
+                # try:
+                #     self.cluster_kwargs[ctype].update({_k: float(_r.values[0])})
+                # except ValueError:
+                #     self.cluster_kwargs[ctype].update({_k: _r.values[0]})
                 
+        # Load dist_mat
+        if len(dist_mat_file) > 0:
+            dist_mat = np.load(dist_mat_file[0])
+            self.dist_mat = dist_mat
         return
 
 
