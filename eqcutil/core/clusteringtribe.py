@@ -218,7 +218,7 @@ class ClusteringTribe(Tribe):
         if isinstance(names, str):
             names = [names]
         # Catch case where not all names are present
-        if set(names) <= set(self.clusters.index.values):
+        if not set(names) <= set(self.clusters.index.values):
             raise ValueError('Not all provided names match templates in this ClusterTribe')
         # Proceed with making subset
         subset = self.__class__(templates = [self.select(name) for name in names])
@@ -227,9 +227,9 @@ class ClusteringTribe(Tribe):
         subset.cluster_kwargs = self.cluster_kwargs
         # If there is a dist_mat, also subset that
         if self.dist_mat is not None:
-            subset.dist_mat = np.full(shape=(len(names), len(names)))
-            for xx,ii in enumerate(subset.clusters.index.values):
-                for yy,jj in enumerate(subset.clusters.index.values):
+            subset.dist_mat = np.full(shape=(len(names), len(names)), fill_value=np.nan)
+            for xx,ii in enumerate(subset.clusters.id_no.values):
+                for yy,jj in enumerate(subset.clusters.id_no.values):
                     subset.dist_mat[xx,yy] = self.dist_mat[ii,jj]
         # return subset
         return subset
@@ -253,7 +253,7 @@ class ClusteringTribe(Tribe):
             return 
         elif method not in self.clusters.columns:
             Logger.warning(f'cluster method {method} not yet run on this ClusteringTribe')
-        names = self.clusters[self.clusters.method == index].index.values
+        names = self.clusters[self.clusters[method] == index].index.values
         return self.get_subset(names)
 
 
@@ -354,16 +354,24 @@ class ClusteringTribe(Tribe):
             fig = plt.figure()
             ax = fig.add_subplot(111)
             kwargs.update({'ax': ax})
+        else:
+            ax = kwargs['ax']
         
         kwargs.update({'color_threshold': threshold})
         if 'distance_sort' not in kwargs.keys():
             kwargs.update({'distance_sort': 'ascending'})
 
+        if 'title' in kwargs.keys():
+            title = kwargs.pop('title')
+        else:
+            title = ''
+
         R = dendrogram(Z, **kwargs)
         ax.set_xlabel('id_no')
         ax.set_ylabel('Linkage Distance\n[1 - corr]')
         ckw = self.cluster_kwargs['correlation_cluster']
-        title = f'Fill Value: {ckw["replace_nan_distances_with"]}\n'
+
+        title += f'Fill Value: {ckw["replace_nan_distances_with"]} | '
         title += f'Corr Thresh: {1 - threshold} | Shift Length: {ckw["shift_len"]} sec'
         ax.set_title(title)
         return R
