@@ -627,6 +627,35 @@ class ClusteringTribe(Tribe):
             self.dist_mat = dist_mat
         return
 
+    def select_template_traces(self, remove_empty_templates=True, **kwargs):
+        """Use the :meth:`~obspy.core.stream.Stream.select` to subsample the
+        streams attached to each :class:`~eqcorrscan.Template` in this :class:`~.ClusteringTribe`
+
+        Provides the option to get rid of empty templates
+
+        NOTE: This method applies in-place changes to template and stream
+        objects in this ClusteringTribe. If you want to save your data, use
+        the :meth:`~.ClusteringTribe.copy` method to create a duplicate
+        before running this method.
+
+        :param remove_empty_templates: should empty templates be removed from this Tribe?
+            Defaults to True
+        :type remove_empty_templates: bool, optional
+        :param kwargs: key-word argument collector that passes kwargs to 
+            :meth:`~obspy.core.stream.Stream.select`
+        """        
+        # Iterate across templates
+        for template in self:
+            # Use obspy.core.stream.Stream.select to subset trace
+            template.st.select(**kwargs)
+            # Assess if template waveforms is empty & if we want to remove empties
+            if len(template.st) == 0 and remove_empty_templates:
+                # If so, remove using eqcorrscan.Tribe.remove
+                self.remove(template)
+
+
+
+
 
     # # def get_summary(self):
     # #     """Return a summary of the clustering membership of
