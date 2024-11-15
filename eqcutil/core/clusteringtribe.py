@@ -13,6 +13,7 @@
 
     TODO: provide an option to just save the paths to the source templates
     TODO: change `self.clusters` to `self.index`
+    TODO: need an update_id_no method - incorporate into get_subset and remove
 """
 import os, logging, tarfile, shutil, pickle, tempfile, glob, fnmatch
 
@@ -235,6 +236,10 @@ class ClusteringTribe(Tribe):
                     subset.dist_mat[xx,yy] = self.dist_mat[ii,jj]
         # return subset
         return subset
+    
+    def select_by_attribute(self, column, threshold, evaluator='lt'):
+        """placehoder - use this method to select subset events using entries in columns"""
+        return
 
     def select_cluster(self, method, index):
         """Return a subset view of this ClusteringTribe for a specific
