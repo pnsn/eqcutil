@@ -662,14 +662,14 @@ class ClusteringTribe(Tribe):
     def remove(self, template):
         """Remove a specified template from this ClusteringTribe
 
-        removes both the template and it's entry from the **clusters** attribute
+        removes both the template and it's entry from the **clusters**
 
         :param template: _description_
         :type template: _type_
         """        
         if template in self.templates:
             # remove the template entry from self.clusters
-            self.clusters.drop(labels=template.name)
+            self.clusters.drop(labels=template.name, inplace=True)
             # remove the template
             Tribe.remove(self, template)
 
