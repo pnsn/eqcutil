@@ -648,7 +648,7 @@ class ClusteringTribe(Tribe):
         # Iterate across templates
         for template in self:
             # Use obspy.core.stream.Stream.select to subset trace
-            template.st.select(**kwargs)
+            template.st = template.st.select(**kwargs)
             # Assess if template waveforms is empty & if we want to remove empties
             if len(template.st) == 0 and remove_empty_templates:
                 # If so, remove using eqcorrscan.Tribe.remove
