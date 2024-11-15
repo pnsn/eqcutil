@@ -659,6 +659,20 @@ class ClusteringTribe(Tribe):
         return deepcopy(self)
 
 
+    def remove(self, template):
+        """Remove a specified template from this ClusteringTribe
+
+        removes both the template and it's entry from the **clusters** attribute
+
+        :param template: _description_
+        :type template: _type_
+        """        
+        if template in self.templates:
+            # remove the template entry from self.clusters
+            self.clusters.drop(labels=template.name)
+            # remove the template
+            Tribe.remove(self, template)
+
     # # def get_summary(self):
     # #     """Return a summary of the clustering membership of
     # #     each template in this ClusteringTribe. Columns are
