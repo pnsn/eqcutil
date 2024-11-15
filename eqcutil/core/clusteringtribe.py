@@ -16,6 +16,7 @@
 """
 import os, logging, tarfile, shutil, pickle, tempfile, glob, fnmatch
 
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -654,7 +655,8 @@ class ClusteringTribe(Tribe):
                 self.remove(template)
 
 
-
+    def copy(self):
+        return deepcopy(self)
 
 
     # # def get_summary(self):
