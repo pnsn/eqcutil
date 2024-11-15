@@ -258,6 +258,12 @@ class ClusteringTribe(Tribe):
 
 
     def _get_template_list(self):
+        """Produce a template_list input for :meth:`~eqcorrscan.utils.clustering.cluster`
+        from the contents of this :class:`~.ClusteringTribe`
+
+        :return: 
+         - **tl** (*list*) - list of tuples (st, id_no) from each template
+        """        
         tl = [(self.select(name).st, row.id_no) for name, row in self.clusters.iterrows()]
         return tl
 
