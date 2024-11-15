@@ -131,7 +131,7 @@ class ClusteringTribe(Tribe):
         else:
             raise TypeError('other must be type eqcorrscan.Template')
 
-    def _get_template_list(self, use_name=False):
+    def _get_template_list(self):
         """Create a template_list input for 
         :meth:`~eqcorrscan.utils.clusering.cluster`
         from this ClusteringTribe with the option
@@ -141,10 +141,8 @@ class ClusteringTribe(Tribe):
         :return: _description_
         :rtype: _type_
         """
-        if use_name:
-            return [(_t.st, _t.name) for _t in self]      
-        else:       
-            return [(_t.st, _e) for _e, _t in enumerate(self)]
+     
+        return [(_t.st, _e) for _e, _t in enumerate(self)]
 
     def cluster(self, method, **kwargs):
         """Extended wrapper for EQcorrscan Template correlation methods
@@ -188,7 +186,10 @@ class ClusteringTribe(Tribe):
                     os.remove('dist_mat.npy')
             for _e, group in enumerate(groups):
                 for entry in group:
-                    index.append(self.templates[entry[1]].name)
+                    try:
+                        index.append(self.templates[entry[1]].name)
+                    except:
+                        breakpoint()
                     values.append(_e)
         else:
             raise ValueError(f'method {method} not supported.')
@@ -256,17 +257,6 @@ class ClusteringTribe(Tribe):
             Logger.warning(f'cluster method {method} not yet run on this ClusteringTribe')
         names = self.clusters[self.clusters[method] == index].index.values
         return self.get_subset(names)
-
-
-    def _get_template_list(self):
-        """Produce a template_list input for :meth:`~eqcorrscan.utils.clustering.cluster`
-        from the contents of this :class:`~.ClusteringTribe`
-
-        :return: 
-         - **tl** (*list*) - list of tuples (st, id_no) from each template
-        """        
-        tl = [(self.select(name).st, row.id_no) for name, row in self.clusters.iterrows()]
-        return tl
 
 
     def _get_linkage(self, **kwargs):
@@ -666,6 +656,8 @@ class ClusteringTribe(Tribe):
 
         :param template: _description_
         :type template: _type_
+
+        DEBUG: Need to re-index id_no before ending
         """        
         if template in self.templates:
             # remove the template entry from self.clusters
