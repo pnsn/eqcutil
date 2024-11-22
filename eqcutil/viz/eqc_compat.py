@@ -44,7 +44,7 @@ def snuffle_template(template, **kwargs):
         kwargs.update({'ntracks': len({tr.id for tr in template.st})})
     if 'catalog' not in kwargs.keys():
         kwargs.update({'catalog': Catalog(events=[template.event])})
-    return template.st.snuffle(catalog=Catalog([template.event]), **kwargs)
+    return template.st.snuffle(**kwargs)
 
 def snuffle_tribe(tribe, **kwargs):
     """Initialize a Pyrocko "snuffler" GUI instance
