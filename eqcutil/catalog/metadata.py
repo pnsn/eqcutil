@@ -39,3 +39,31 @@ def apply_phase_hints(catalog):
                 msg = f'Missing pick for ORID: {origin.resource_id} & ARID: {_arr.resource_id}'
                 Logger.warning(msg)
     return catalog
+
+
+def catalog2inventory(catalog, client, wild_component=False, **kwargs):
+    channels = []
+    min_starttime = {}
+    max_endtime = {}
+    for event in catalog.events:
+        for pick in event.picks:
+            channel = pick.waveform_id.id
+            if wild_component:
+                channel = channel[:-1] + '?'
+            if channel not in channels:
+                channels.append(channel)
+                min_starttime.update({channel: pick.time})
+                max_endtime.update({channel: pick.time})
+            else:
+                if min_starttime[channel] > pick.time:
+                    min_starttime.update({channel: pick.time})
+                if max_endtime[channel] < pick.time:
+                    max_endtime.update({channel: pick.time})
+    bulk = []
+    for _k, _v in min_starttime.items():
+        id_parts = _k.split('.')
+        t0 = _v
+        t1 = max_endtime[_k]
+        bulk.append(tuple(id_parts + [t0, t1]))
+    inv = client.get_stations_bulk(bulk, **kwargs)
+    return inv
