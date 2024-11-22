@@ -72,7 +72,7 @@ def stream_id_formatter(phase, station, network='UW', location='', phase_mapping
     """    
     return '%s.%s.%s.%s'%(network, station, location, phase_mapping[phase])
 
-def  quakemigrate2cat(event_files, pick_files, hyp_type='max', stream_id_formatter=stream_id_formatter):
+def  quakemigrate2cat(event_files, pick_files, hyp_type='max', min_snr=3, stream_id_formatter=stream_id_formatter):
     """Convert the output *.event and *.pick files from a QuakeMigrate
     run into an ObsPy :class:`~obspy.core.event.Catalog` object that
     has the necessary pick/arrival referencing and phase name / hint
@@ -89,6 +89,9 @@ def  quakemigrate2cat(event_files, pick_files, hyp_type='max', stream_id_formatt
          - 'max' -- uses the X,Y,Z values for longitude, latitude, and depth, respectively
          - 'gau' -- uses GAU_X, GAU_Y, GAU_Z values for hypocentral parameters
     :type hyp_type: str, optional.
+    :param min_snr: minimum Signal to Noise Ratio to allow for QuakeMigrate picks (column SNR),
+        defaults to 3
+    :type min_snr: scalar, optional.
 
     :return: catalog-formatted event metadata
     :rtype: obspy.core.event.Catalog
@@ -128,6 +131,9 @@ def  quakemigrate2cat(event_files, pick_files, hyp_type='max', stream_id_formatt
         for _e in pick_files:
             if os.path.isfile(_e):
                 idf = pd.read_csv(_e)
+                evid = os.path.split(_e)[-1]
+                evid = os.path.splitext(evid)[0]
+                idf = idf.assign(EventID=[int(evid) for _e in range(len(idf))])
                 if set(PICK_FILE_COLS) <= set(idf.columns):
                     df_p = pd.concat([df_p, idf], ignore_index=True)
                 else:
@@ -138,11 +144,11 @@ def  quakemigrate2cat(event_files, pick_files, hyp_type='max', stream_id_formatt
         Logger.critical(f'pick_files type {type(pick_files)} not supported. Must be str or list of str')    
     
 
-    cat = _qm2cat_inner_process(df_e, df_p, hyp_type=hyp_type, formatter=stream_id_formatter)
+    cat = _qm2cat_inner_process(df_e, df_p, hyp_type=hyp_type, min_snr=min_snr, formatter=stream_id_formatter)
 
     return cat
 
-def _qm2cat_inner_process(df_e, df_p, hyp_type='max', formatter=stream_id_formatter):
+def _qm2cat_inner_process(df_e, df_p, hyp_type='max', min_snr=3, formatter=stream_id_formatter):
     """PRIVATE METHOD
 
     Inner method for converting pre-read & format checked
@@ -177,7 +183,7 @@ def _qm2cat_inner_process(df_e, df_p, hyp_type='max', formatter=stream_id_format
         hasmag = False
 
     # Sanity check to only take picks that match the given Event_ID
-    df_p = df_p[df_p.event_id.isin(df_e.index)]
+    df_p = df_p[df_p.EventID.isin(df_e.EventID)]
     if len(df_p) == 0:
         Logger.critical('No phases matched event_id values in "event_file"')
     else:
@@ -185,17 +191,17 @@ def _qm2cat_inner_process(df_e, df_p, hyp_type='max', formatter=stream_id_format
 
     ## START MAKING THE CATALOG ##
     cat = Catalog()
-    for event_id, erow in df_e.iterrows():
+    for _, erow in df_e.iterrows():
         # Subset Picks to Match current EVID
-        Logger.info(f'Processing event_id: {event_id}')
-        idf_picks = df_p[df_p.event_id == event_id]
+        Logger.info(f'Processing event_id: {erow.EventID}')
+        idf_picks = df_p[df_p.EventID == erow.EventID]
         Logger.info(f'...with {len(idf_picks)} picks')
         # Create event
         event = Event()
         # Create Origin
         origin = Origin()
         # Populate best-estimate hypocenter
-        origin.time = UTCDateTime(erow.origin_time)
+        origin.time = UTCDateTime(erow.DT)
         if hyp_type.lower() == 'max':
             origin.latitude = erow.Y
             origin.longitude = erow.X
@@ -215,7 +221,7 @@ def _qm2cat_inner_process(df_e, df_p, hyp_type='max', formatter=stream_id_format
 
         if hasmag:
             if isinstance(erow.ML, (int, float)):   
-                Logger.info(f'EVID: {event_id} has magnitude estimate - including in Event description')
+                Logger.info(f'EVID: {erow.EventID} has magnitude estimate - including in Event description')
                 magnitude = Magnitude(mag=erow.ML,
                                     magnitude_type='ML',
                                     mag_errors=QuantityError(uncertainty=erow.ML_Err),
@@ -226,25 +232,28 @@ def _qm2cat_inner_process(df_e, df_p, hyp_type='max', formatter=stream_id_format
                 # Set as preferred magnitude ID
                 event.preferred_magnitude_id = magnitude.resource_id
             else:
-                Logger.info(f'EVID: {event_id} did not have magnitude estimate - skipping magnitude object generation')
+                Logger.info(f'EVID: {erow.EventID} did not have magnitude estimate - skipping magnitude object generation')
 
         # Populate Picks and Arrivals
         for _, prow in idf_picks.iterrows():
             # Create pick
-            seed_id = formatter(prow.Phase, prow.Station)
-            pick = Pick(time = UTCDateTime(prow.PickTime),
-                        time_errors = prow.PickError,
-                        waveform_id = WaveformStreamID(seed_string=seed_id),
-                        evaluation_mode = 'automatic',
-                        phase_hint=prow.Phase)
-            # Create arrival that references pick and has travel time uncertainty
-            arrival = Arrival(pick_id = pick.resource_id,
-                              phase=prow.Phase,
-                              time_residual=prow.PickTime - prow.ModelledTime)
-            # Append pick to event
-            event.picks.append(pick)
-            # Append arrival to preferred origin
-            event.preferred_origin().arrivals.append(arrival)
+            if prow.SNR >= min_snr:
+                seed_id = formatter(prow.Phase, prow.Station)
+                pick = Pick(time = UTCDateTime(prow.PickTime),
+                            time_errors = UTCDateTime(prow.PickError),
+                            waveform_id = WaveformStreamID(seed_string=seed_id),
+                            evaluation_mode = 'automatic',
+                            phase_hint=prow.Phase)
+                # Create arrival that references pick and has travel time uncertainty
+                arrival = Arrival(pick_id = pick.resource_id,
+                                phase=prow.Phase,
+                                time_residual=UTCDateTime(prow.PickTime) - UTCDateTime(prow.ModelledTime))
+                # Append pick to event
+                event.picks.append(pick)
+                # Append arrival to preferred origin
+                event.preferred_origin().arrivals.append(arrival)
+            else:
+                continue
         # Append event to catalog
         cat.events.append(event)
     # Return catalog
