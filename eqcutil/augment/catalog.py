@@ -12,7 +12,7 @@ import logging
 import obspy
 import numpy as np
 
-from eqcorrscan.utils.catalog_utils import filter_picks
+import eqcorrscan.utils.catalog_utils as eqcu
 from eqcorrscan.utils.clustering import catalog_cluster
 
 Logger = logging.getLogger(__name__)
@@ -53,6 +53,69 @@ def apply_phase_hints(catalog):
                 Logger.warning(msg)
     return catalog
 
+
+def filter_picks(catalog, **kwargs):
+    """Extension of :meth:`~eqcorrscan.utils.catalog_utils.filter_picks`, adding
+    an option 'preferred' for argument **enforce_single_pick**. This option
+    Uses the arrivals from the preferred origin of each event in **catalog**
+    to filter out extraneous picks and then applies filtering specified as normal
+
+    Filter events in the catalog based on a number of parameters.
+
+    :param catalog: Catalog to filter.
+    :type catalog: obspy.core.event.Catalog
+    :param stations: List for stations to keep picks from. Defaults to None
+    :type stations: list or Nonetype, optional
+    :param channels: List of channels to keep picks from. Defaults to None
+    :type channels: list or NoneType, optional
+    :param networks: List of networks to keep picks from. Defaults to None
+    :type networks: list or NoneType, optional
+    :param locations: List of location codes to use. Defaults to None
+    :type locations: list or NoneType, optional
+    :param top_n_picks: Filter only the top N most used station-channel pairs.
+        Defaults to None
+    :type top_n_picks: int or NoneType, optional
+    :param evaluation_mode:
+        To select only 'manual' or 'automatic' picks, or use 'all'. Defaults to 'all'.
+    :type evaluation_mode: str, optional
+    :param phase_hints: List of retained phase hints, or None to use all. Defaults to None
+    :type phase_hints: list or NoneType, optional
+    :param enforce_single_pick:
+        Method to enforce using only one pick of each phase-hint per
+        station or False to leave all. Can be {False, "earliest", "preferred"}.
+        Defaults to False
+    :type enforce_single_pick: str or bool
+
+    :return:
+        Filtered Catalog - if events are left with no picks, they are removed
+        from the catalog.
+    :rtype: obspy.core.event.Catalog
+
+    .. note::
+        Will filter first by station, then by channel, then by network, if
+        using top_n_picks, this will be done last, after the other filters
+        have been applied.
+
+    .. note::
+        Doesn't work in place on the catalog, your input catalog will be safe
+        unless you overwrite it.
+
+    .. note:: Doesn't expand wildcard characters.
+    """    
+    if 'enforce_single_pick' in kwargs.keys():
+        if kwargs['enforce_single_pick'] in [False,'earliest']:
+            cat = eqcu.filter_picks(catalog, **kwargs)
+        elif kwargs['enforce_single_pick'] == 'preferred':
+            kwargs.update({'enforce_single_pick': False})
+            for event in catalog:
+                origin = event.preferred_origin()
+                ppicks = [_arr.pick_id.get_referred_object() for _arr in origin.arrivals]
+                event.picks = ppicks  
+            cat = eqcu.filter_picks(catalog, **kwargs)
+
+    else:
+        cat = eqcu.filter_picks(catalog, **kwargs)
+    return cat
 # def filter_picks(catalog, stations=None, channels=None, networks=None,
 #                  locations=None, top_n_picks=None, evaluation_mode='all',
 #                  phase_hints=None, enforce_single_pick=False,

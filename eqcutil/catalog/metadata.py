@@ -1,6 +1,7 @@
 
 import logging
 from obspy import Catalog
+import eqcorrscan.utils.catalog_utils as eqcu
 
 Logger = logging.getLogger(__name__)
 
@@ -39,6 +40,8 @@ def apply_phase_hints(catalog):
                 msg = f'Missing pick for ORID: {origin.resource_id} & ARID: {_arr.resource_id}'
                 Logger.warning(msg)
     return catalog
+
+      
 
 
 def catalog2inventory(catalog, client, wild_component=False, **kwargs):
