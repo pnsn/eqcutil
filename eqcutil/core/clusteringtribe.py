@@ -106,6 +106,10 @@ class ClusteringTribe(Tribe):
         else:
             Logger.warning(f'type of other does not conform with ClusteringTribe.extend')
 
+    def __iadd__(self, other):
+        self.extend(other)
+
+
     def _deduplicate_name(self, other, delimiter='__', start=0):
         if other not in self.clusters.index.values:
             return other
@@ -179,7 +183,6 @@ class ClusteringTribe(Tribe):
             else:
                 kwargs.update({'save_corrmat': True})
                 save_local = False
-
             groups = euc.cluster(self._get_template_list(), **kwargs)
             if 'save_corrmat' in kwargs.keys():
                 self.dist_mat = np.load('dist_mat.npy')
@@ -578,7 +581,6 @@ class ClusteringTribe(Tribe):
             clusters = pd.read_csv(cluster_file[0], index_col=[0])
         else:
             clusters = pd.DataFrame()
-
         # Remove lines that don't match loaded templates
         if len(clusters) != 0:
             clusters = clusters[clusters.index.isin([_t.name for _t in templates])]
