@@ -111,6 +111,8 @@ def filter_picks(catalog, **kwargs):
                 origin = event.preferred_origin()
                 ppicks = [_arr.pick_id.get_referred_object() for _arr in origin.arrivals]
                 event.picks = ppicks  
+            # Force only preferred
+            event.origins = [event.preferred_origin()]
             cat = eqcu.filter_picks(catalog, **kwargs)
 
     else:
