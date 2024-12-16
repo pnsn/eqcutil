@@ -53,8 +53,8 @@ def model_arrivals(origin, inventory, model_name='P4', phases=['P','S']):
   
     """    
     model = make_model(name=model_name)
-    raypaths = model_raypaths(model, origin, inventory, phases=phases)
-    summary = ray_summary(raypaths, origin, inventory)
+    raypaths, e_offset = model_raypaths(model, origin, inventory, phases=phases)
+    summary = ray_summary(raypaths, origin, inventory, e_offset=e_offset)
     return summary
 
 ## MODEL CONSTRUCTION METHODS ##
@@ -139,7 +139,58 @@ def make_model(name='P4'):
 #############################
 ## RAYPATH MODELING METHOD ##
 #############################
+
 def model_raypaths(model, origin, inventory, phases=['P','S']):
+    results = {}
+    # Get Origin Hypocentral parameters
+    olat = origin.latitude
+    olon = origin.longitude
+    odep = origin.depth
+    oele = -1.*origin.depth
+    time = origin.time
+    # If origin is below sea-level, set first guess at e_offset as sea-level
+    if oele < 0:
+        e_offset = 0.
+    # If origin is above sea-level, take that as the first guess at e_offset
+    else:
+        e_offset = oele # [m] above sea-level
+    distances = set([])
+    # Iterate across networks & stations
+    for net in inventory.networks:
+        for sta in net.stations:
+            slat = sta.latitude
+            slon = sta.longitude
+            sele = sta.elevation
+            # If station sits above top model, adjust e_offset
+            if sele > e_offset:
+                e_offset = sele
+            # Calculate lateral offset
+            delta = locations2degrees(olat, olon, slat, slon)
+            distances.add(delta)
+    # Model offsets
+    arrivals = model.arrivals(distances=list(distances),
+                              zstart=odep - e_offset,
+                              zstop=0.)
+    # Zip modeling results
+    ddict = dict(zip(distances, arrivals))
+    # Associate stations & results
+    for net in inventory.networks:
+        for sta in net.stations:
+            slat = sta.latitude
+            slon = sta.longitude
+            sele = sta.elevation
+            # If station sits above top model, adjust e_offset
+            if sele > e_offset:
+                e_offset = sele
+            # Calculate lateral offset
+            delta = locations2degrees(olat, olon, slat, slon)
+            results.update({sta.code: ddict[delta]})
+
+    return (results, e_offset)
+
+
+
+def model_raypaths_simple(model, origin, inventory, phases=['P','S']):
     """
     Model the P-wave travel times at stations in the provided inventory
     from an earthquake origin. This model assumes that stations are at 
@@ -161,8 +212,11 @@ def model_raypaths(model, origin, inventory, phases=['P','S']):
         with list values comprising sets of :class:`~pyrocko.cake.Ray` objects
     """    
     results = {}
+    # Iterate across networks in inventory
     for network in inventory:
+        # Iterate across stations
         for station in network.stations:
+            # Get station-epicenter distance
             dist_deg = locations2degrees(
                 origin.latitude,
                 origin.longitude,
@@ -217,6 +271,7 @@ def ray2pick(ray, wfid, origin):
                 waveform_id=wfid,
                 evaluation_mode='automatic',
                 time_errors=None)
+    return pick
 
 
 def ray_summary(results, origin, inventory):
