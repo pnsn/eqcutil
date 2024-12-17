@@ -4,6 +4,7 @@ from eqcorrscan import Tribe
 from obsplus import WaveBank, EventBank
 
 from eqcutil.augment.catalog import apply_phase_hints, filter_picks
+from eqcutil.augment.template import rename_templates
 from eqcutil.core.clusteringtribe import ClusteringTribe
 from eqcutil.util.logging import rich_error_message
 
@@ -14,7 +15,8 @@ def generate_clustering_tribe_from_banks(
     eventbank: EventBank,
     event_ids: list,
     pick_filt_kwargs={'enforce_single_pick': 'preferred'},
-    creation_kwargs={'method':'from_client'}) -> ClusteringTribe:
+    creation_kwargs={'method':'from_client'},
+    rename=True) -> ClusteringTribe:
 
     # Compatability check for wavebank
     if not isinstance(wavebank, WaveBank):
@@ -61,6 +63,9 @@ def generate_clustering_tribe_from_banks(
         # Ensure template stream is merged
         for template in tribe:
             template.st.merge()
+        # Apply renaming if specified
+        if rename:
+            tribe = rename_templates(tribe)
         ctr += tribe
 
     return ctr
