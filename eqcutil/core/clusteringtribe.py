@@ -298,7 +298,7 @@ class ClusteringTribe(Tribe):
             Z = linkage(dist_vect, **kwargs)
             return Z
 
-    def _cct_regroup(self, corr_thresh, **kwargs):
+    def cct_regroup(self, corr_thresh, inplace=False, **kwargs):
         """Regroup cross-correlated templates at a different correlation
         threshold with options to re-define the linkage parameterization
     
@@ -321,14 +321,18 @@ class ClusteringTribe(Tribe):
             Logger.critical(f'corr_thresh must be in (0, 1)')
         
         if corr_thresh == ckw['corr_thresh']:
-            Logger.info(f'Already grouped for corr_thresh={corr_thresh}')
+            if not inplace:
+                Logger.info(f'Already grouped for corr_thresh={corr_thresh}')
             return self.clusters['correlation_cluster']
         else:
             # Get new grouping
             indices = euc.fcluster(Z, t= 1 - corr_thresh, criterion='distance')
-        
             output = pd.Series(data=indices, index=self.clusters.index, name='correlation_cluster')
-            return output
+            if inplace:
+                self.clusters.correlation_cluster=indices
+                ckw['corr_thresh'] = corr_thresh
+            else:
+                return output
         
     def dendrogram(self, xlabelfield='id_no', corr_thresh=None, **kwargs):
         """Wrapper for :meth:`~scipy.cluster.hierarchy.dendrogram` that uses
@@ -399,6 +403,7 @@ class ClusteringTribe(Tribe):
 
         title += f'Fill Value: {ckw["replace_nan_distances_with"]} | '
         title += f'Corr Thresh: {1 - threshold} | Shift Length: {ckw["shift_len"]} sec'
+        title += f' | Individual Shifts: {ckw["allow_individual_trace_shifts"]}'
         ax.set_title(title)
         return R
 
