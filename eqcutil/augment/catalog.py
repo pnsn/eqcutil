@@ -11,6 +11,7 @@
 import logging
 import obspy
 import numpy as np
+from obspy.core.event import WaveformStreamID
 
 import eqcorrscan.utils.catalog_utils as eqcu
 from eqcorrscan.utils.clustering import catalog_cluster
@@ -118,6 +119,17 @@ def filter_picks(catalog, **kwargs):
     else:
         cat = eqcu.filter_picks(catalog, **kwargs)
     return cat
+
+
+def transfer_picks(catalog, mapping={}):
+    if len(mapping) > 0:
+        for _e, event in enumerate(catalog.events):
+            for _p, pick in enumerate(event.picks):
+                seed = pick.waveform_id.id
+                if seed in mapping.keys():
+                    pick.waveform_id = WaveformStreamID(seed_string=mapping[seed])
+    return catalog
+
 # def filter_picks(catalog, stations=None, channels=None, networks=None,
 #                  locations=None, top_n_picks=None, evaluation_mode='all',
 #                  phase_hints=None, enforce_single_pick=False,

@@ -3,7 +3,7 @@ import logging
 from eqcorrscan import Tribe
 from obsplus import WaveBank, EventBank
 
-from eqcutil.augment.catalog import apply_phase_hints, filter_picks
+from eqcutil.augment.catalog import apply_phase_hints, filter_picks, transfer_picks
 from eqcutil.augment.template import rename_templates
 from eqcutil.core.clusteringtribe import ClusteringTribe
 from eqcutil.util.logging import rich_error_message
@@ -16,6 +16,7 @@ def generate_clustering_tribe_from_banks(
     event_ids: list,
     pick_filt_kwargs={'enforce_single_pick': 'preferred'},
     creation_kwargs={'method':'from_client'},
+    transfer_mapping={},
     rename=True) -> ClusteringTribe:
 
     # Compatability check for wavebank
@@ -49,6 +50,7 @@ def generate_clustering_tribe_from_banks(
     for event_id in ebidx_sub.event_id:
         cat = eventbank.get_events(event_id=event_id)
         cat = apply_phase_hints(cat)
+        cat = transfer_picks(cat, transfer_mapping)
         cat = filter_picks(cat, **pick_filt_kwargs)
         if len(cat) == 0:
             continue
@@ -66,6 +68,16 @@ def generate_clustering_tribe_from_banks(
         # Apply renaming if specified
         if rename:
             tribe = rename_templates(tribe)
+        # Apply template mapping to channels
+        # TODO: enforce rules to only allow location and component changes
+        for template in tribe:
+            for tr in template.st:
+                if tr.id in transfer_mapping.keys():
+                    new_id = transfer_mapping[tr.id]
+                    new_id_parts = new_id.split('.')
+                    for _e, _k in enumerate(['network','station','location','channel']):
+                        if tr.stats[_k] != new_id_parts[_e]:
+                            tr.stats[_k] = new_id_parts[_e]
         ctr += tribe
 
     return ctr
