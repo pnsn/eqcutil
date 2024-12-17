@@ -108,7 +108,7 @@ class ClusteringTribe(Tribe):
 
     def __iadd__(self, other):
         self.extend(other)
-
+        return self
 
     def _deduplicate_name(self, other, delimiter='__', start=0):
         if other not in self.clusters.index.values:
