@@ -30,6 +30,7 @@ from eqcorrscan import Tribe, Template
 import eqcorrscan.utils.clustering as euc
 from eqcorrscan.core.match_filter.helpers import _safemembers, _par_read
 
+from eqcutil.util.pandas import reindex_groups
 from eqcutil.viz import eqc_compat
 
 Logger = logging.getLogger(__name__)
@@ -676,6 +677,21 @@ class ClusteringTribe(Tribe):
             self.clusters.drop(labels=template.name, inplace=True)
             # remove the template
             Tribe.remove(self, template)
+
+    def reindex_groups(self, group='correlation_cluster', ascending=False):
+        """Reindex a specified group by decending (or ascending)
+        number of members
+
+        :param group: name of the group to re-index. Defaults to 'correlation_cluster'
+        :type group: str, optional
+        :param ascending: Should group number get bigger with more members? Defaults to False
+        :type ascending: bool, optional
+        """        
+        _vc = self.clusters[group].value_counts()
+        return reindex_groups(self.clusters, group, ascending=ascending)
+                
+        
+
 
     # # def get_summary(self):
     # #     """Return a summary of the clustering membership of
