@@ -30,7 +30,7 @@ from eqcorrscan import Tribe, Template
 import eqcorrscan.utils.clustering as euc
 from eqcorrscan.core.match_filter.helpers import _safemembers, _par_read
 
-from eqcutil.util.pandas import reindex_groups
+from eqcutil.util.pandas import reindex_columns
 from eqcutil.viz import eqc_compat
 
 Logger = logging.getLogger(__name__)
@@ -110,6 +110,29 @@ class ClusteringTribe(Tribe):
     def __iadd__(self, other):
         self.extend(other)
         return self
+    
+    def __repr__(self, mode='clusters'):
+        rstr = f'ClusteringTribe of {len(self.templates)} templates'
+        if mode == 'clusters':
+            for col in self.clusters.columns:
+                if 'cluster' in col:
+                    ngrps = len(self.clusters[col].unique())
+                    if col == 'correlation_cluster':
+                        istat = f'c_thresh: {self.cluster_kwargs[col]["corr_thresh"]}'
+                    elif col in ['space_cluster', 'space_time_cluster']:
+                        istat = f'd_thresh: {self.cluster_kwargs[col]["d_thresh"]} km'
+                        if col == 'space_time_cluster':
+                            istat += f' | t_thresh: {self.cluster_kwargs[col]["t_thresh"]} sec'
+                    rstr += f'\n{ngrps} groups for {istat}'
+        else:
+            raise NotImplementedError
+        return rstr
+
+    # Shorthand for clusters
+    def get_clusters(self):
+        return self.clusters
+    
+    _c = property(get_clusters)
 
     def _deduplicate_name(self, other, delimiter='__', start=0):
         if other not in self.clusters.index.values:
@@ -313,7 +336,10 @@ class ClusteringTribe(Tribe):
             Logger.critical(f'correlation clustering has not been run on this ClusteringTribe')
         else:
             ckw = self.cluster_kwargs['correlation_cluster']
-
+        if 'precision' in kwargs.keys():
+            prec = kwargs.pop('precision')
+        else:
+            prec = 6
         Z = self._get_linkage(**kwargs)
 
         if not isinstance(corr_thresh, float):
@@ -331,11 +357,11 @@ class ClusteringTribe(Tribe):
             output = pd.Series(data=indices, index=self.clusters.index, name='correlation_cluster')
             if inplace:
                 self.clusters.correlation_cluster=indices
-                ckw['corr_thresh'] = corr_thresh
+                ckw['corr_thresh'] = np.round(corr_thresh,decimals=prec)
             else:
                 return output
         
-    def dendrogram(self, xlabelfield='id_no', corr_thresh=None, **kwargs):
+    def dendrogram(self, xlabels='index', corr_thresh=None, scalar=False, **kwargs):
         """Wrapper for :meth:`~scipy.cluster.hierarchy.dendrogram` that uses
         saved attribute values from a running :meth:`~.ClusteringTribe.cluster`
         with method='correlation_cluster' to produce a dendrogram plot
@@ -366,12 +392,33 @@ class ClusteringTribe(Tribe):
             kwargs.update({'ax': ax})
         else:
             ax = kwargs['ax']
-        
-        if xlabelfield in self.clusters.columns:
-            xlvalues = self.clusters[xlabelfield].values
             
-        elif xlabelfield == 'index':
-            xlvalues = self.clusters.index.values
+        xlvalues = None
+        if isinstance(xlabels, str):
+            if xlabels in self.clusters.columns:
+                if scalar:
+                    xlvalues = self.clusters[xlabels].values*scalar
+                else:
+                    xlvalues = self.clusters[xlabels].values
+                
+            elif xlabels == 'index':
+                xlvalues = self.clusters.index.values
+
+        # Add list functionality
+        elif isinstance(xlabels, list):
+            if all(_e in self.clusters.columns for _e in xlabels):
+                xlvalues = []
+                for idx, row in self.clusters[xlabels].iterrows():
+                    xlv = ''
+                    for _e, value in enumerate(row.values):
+                        if scalar[_e]:
+                            xlv += f'{value*scalar[_e]:.1f}|'
+                        else:
+                            xlv += f'{value}|'
+                    xlv = xlv[:-1]
+                    xlvalues.append(xlv)
+
+
         else:
             xlvalues = None
 
@@ -393,17 +440,16 @@ class ClusteringTribe(Tribe):
                 newlabel = xlvalues[ind]
                 newlabels.append(newlabel)
             ax.set_xticklabels(newlabels)
-            ax.set_xlabel(xlabelfield)
+            if isinstance(xlabels, str):
+                ax.set_xlabel(xlabels)
+            elif isinstance(xlabels, list):
+                ax.set_xlabel('|'.join(xlabels))
         else:
             ax.set_xlabel('Entry Number')
         ax.set_ylabel('Linkage Distance\n[1 - corr]')
         ckw = self.cluster_kwargs['correlation_cluster']
-
-
-        
-
         title += f'Fill Value: {ckw["replace_nan_distances_with"]} | '
-        title += f'Corr Thresh: {1 - threshold} | Shift Length: {ckw["shift_len"]} sec'
+        title += f'Corr Thresh: {1 - threshold:.3f} | Shift Length: {ckw["shift_len"]} sec'
         title += f' | Individual Shifts: {ckw["allow_individual_trace_shifts"]}'
         ax.set_title(title)
         return R
@@ -678,7 +724,7 @@ class ClusteringTribe(Tribe):
             # remove the template
             Tribe.remove(self, template)
 
-    def reindex_groups(self, group='correlation_cluster', ascending=False):
+    def reindex_columns(self, group='correlation_cluster', ascending=False):
         """Reindex a specified group by decending (or ascending)
         number of members
 
@@ -687,8 +733,7 @@ class ClusteringTribe(Tribe):
         :param ascending: Should group number get bigger with more members? Defaults to False
         :type ascending: bool, optional
         """        
-        _vc = self.clusters[group].value_counts()
-        return reindex_groups(self.clusters, group, ascending=ascending)
+        return reindex_columns(self.clusters, group, ascending=ascending, inplace=True)
                 
         
 
