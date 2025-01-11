@@ -14,48 +14,85 @@ TODO: Consider making this a class that contains
 import logging
 import pandas as pd
 from obspy import Inventory
-from obspy.core.event import Pick, Arrival, WaveformStreamID
+from obspy.core.event import Pick, Arrival, WaveformStreamID, Origin
 from obspy.geodetics import locations2degrees
 from pyrocko import cake
 
-def model_arrivals(origin, inventory, model_name='P4', phases=['P','S']):
-    """Model raypaths and travel-times between a seismic event
-    and a set of seismic receivers for a prescribed PNSN mdoel
-    and phase types.
+# def model_arrivals(origin, inventory, model_name='P4', phases=['P','S']):
+#     """Model raypaths and travel-times between a seismic event
+#     and a set of seismic receivers for a prescribed PNSN mdoel
+#     and phase types.
     
-    Parameters
-    ----------
-    :param origin: seismic event object
-    :type origin: obspy.core.event.Origin
-    :param inventory: seismic station inventory containing station objects
-    :type inventory: obspy.core.inventory.Inventory
-    :param model_name: name of the PNSN model to use, defaults to 'P4'
-    :type model_name: str, optional
-    :param phases: name of phases to use, defaults to ['P','S']
-    :type phases: list, optional
-    :return:
-     - **summary** (*pandas.DataFrame*) -- dataframe summarizing the
-        modeled ray-paths and parameters needed for static corrections
+#     Parameters
+#     ----------
+#     :param origin: seismic event object
+#     :type origin: obspy.core.event.Origin
+#     :param inventory: seismic station inventory containing station objects
+#     :type inventory: obspy.core.inventory.Inventory
+#     :param model_name: name of the PNSN model to use, defaults to 'P4'
+#     :type model_name: str, optional
+#     :param phases: name of phases to use, defaults to ['P','S']
+#     :type phases: list, optional
+#     :return:
+#      - **summary** (*pandas.DataFrame*) -- dataframe summarizing the
+#         modeled ray-paths and parameters needed for static corrections
     
-    Columns
-    -------
-     - station: station code
-     - sta dz m: Station elevation offset in meters (0 - elevation)
-     - orig dz m: Origin depth offset in meters (positive is above sea-level)
-     - ray parameter s/deg: ray parameter in seconds per degree
-     - offset km: epicenter-receiver offset in kilometers
-     - takeoff angle: takeoff angle in degrees
-     - incidence angle: incidence angle in degrees
-     - transmission efficiency: percent efficiency of transmission due to path effects
-     - spreading efficiency: percent efficincy of transmission due to spreading effects
-     - path description: description of the ray-path:
-            Given Phase    (Used Phase)   (start_layer - turning_layer - ending_layer)
+#     Columns
+#     -------
+#      - station: station code
+#      - sta dz m: Station elevation offset in meters (0 - elevation)
+#      - orig dz m: Origin depth offset in meters (positive is above sea-level)
+#      - ray parameter s/deg: ray parameter in seconds per degree
+#      - offset km: epicenter-receiver offset in kilometers
+#      - takeoff angle: takeoff angle in degrees
+#      - incidence angle: incidence angle in degrees
+#      - transmission efficiency: percent efficiency of transmission due to path effects
+#      - spreading efficiency: percent efficincy of transmission due to spreading effects
+#      - path description: description of the ray-path:
+#             Given Phase    (Used Phase)   (start_layer - turning_layer - ending_layer)
   
-    """    
+#     """    
+#     model = make_model(name=model_name)
+#     raypaths, e_offset = model_raypaths(model, origin, inventory, phases=phases)
+#     summary = ray_summary(raypaths, origin, inventory)
+#     return summary
+
+def model_picks(origin, inventory, model_name='P4', phases=['P','S']):
+    if not isinstance(origin, Origin):
+        raise TypeError('origin must be type obspy.core.event.Origin')
+    if not isinstance(inventory, Inventory):
+        raise TypeError
+    elif len(inventory) == 0:
+        raise ValueError('Empty Inventory')
+    if model_name not in ['P4']:
+        raise ValueError(f'model_name "{model_name}" not supported')
+    if isinstance(phases, str):
+        phases = [phases]
+    elif isinstance(phases, list):
+        if all(isinstance(_e, str) for _e in phases):
+            pass
+        else:
+            raise ValueError
+    else:
+        raise TypeError
+    
     model = make_model(name=model_name)
-    raypaths, e_offset = model_raypaths(model, origin, inventory, phases=phases)
-    summary = ray_summary(raypaths, origin, inventory, e_offset=e_offset)
-    return summary
+    results = model_raypaths(model, origin, inventory, phases=phases)
+    picks = []
+    # Convert rays to picks
+    for net in inventory.networks:
+        for sta in net.stations:
+            rays, e_offset = results[f'{net.code}.{sta.code}']
+            wfid = WaveformStreamID(
+                network_code=net.code,
+                station_code=sta.code,
+                location_code=sta.channels[0].location_code,
+                channel_code=sta.channels[0].code
+            )
+            for ray in rays:
+                pick = ray2pick(ray, wfid, origin)
+                picks.append(pick)
+    return picks
 
 ## MODEL CONSTRUCTION METHODS ##
 
@@ -141,6 +178,30 @@ def make_model(name='P4'):
 #############################
 
 def model_raypaths(model, origin, inventory, phases=['P','S']):
+    """Updated version of model_raypaths that uses the Hypo2000 elevation adjustment
+    approach to sources and/or events above sea-level. All receiver(s) in **inventory**
+    and the input **origin** elevations are assessed for positive elevations / negative
+    depths (respectively) and all of these values are shifted by the largest elevation
+    to place the sources and receivers within the model.
+
+    :param model: Layered model object
+    :type model: :class:`~pyrocko.cake.LayeredModel
+    :param origin: Event origin object
+    :type origin: :class:`~obspy.core.event.Origin`
+    :param inventory: Station inventory object
+    :type inventory: :class:`~obspy.core.inventory.Inventory`
+    :param phases: List of phases to model, defaults to ['P','S']
+    :type phases: list, optional
+    :returns:
+     - **results** (*dict*) -- dictionary keyed by NET.STA codes from
+        input **inventory** with values that are structured as follows:
+        [:meth:`~pyrocko.cake.LayeredModel.arrivals` raw output, e_offset]
+
+         - **e_offset** is the vertical offset applied to modeled arrivals to place
+           receivers (stations) and the origin inside the provided velocity model
+           This value should be **added** to all elevations (y coordinates) of the
+           ray-path in the arrivals raw output to restore the true elevations 
+    """    
     results = {}
     # Get Origin Hypocentral parameters
     olat = origin.latitude
@@ -148,46 +209,36 @@ def model_raypaths(model, origin, inventory, phases=['P','S']):
     odep = origin.depth
     oele = -1.*origin.depth
     time = origin.time
-    # If origin is below sea-level, set first guess at e_offset as sea-level
-    if oele < 0:
-        e_offset = 0.
-    # If origin is above sea-level, take that as the first guess at e_offset
-    else:
-        e_offset = oele # [m] above sea-level
-    distances = set([])
-    # Iterate across networks & stations
+
+    results = {}
+    # Iterate across stations
     for net in inventory.networks:
         for sta in net.stations:
-            slat = sta.latitude
-            slon = sta.longitude
-            sele = sta.elevation
-            # If station sits above top model, adjust e_offset
-            if sele > e_offset:
-                e_offset = sele
-            # Calculate lateral offset
-            delta = locations2degrees(olat, olon, slat, slon)
-            distances.add(delta)
-    # Model offsets
-    arrivals = model.arrivals(distances=list(distances),
-                              zstart=odep - e_offset,
-                              zstop=0.)
-    # Zip modeling results
-    ddict = dict(zip(distances, arrivals))
-    # Associate stations & results
-    for net in inventory.networks:
-        for sta in net.stations:
-            slat = sta.latitude
-            slon = sta.longitude
-            sele = sta.elevation
-            # If station sits above top model, adjust e_offset
-            if sele > e_offset:
-                e_offset = sele
-            # Calculate lateral offset
-            delta = locations2degrees(olat, olon, slat, slon)
-            results.update({sta.code: ddict[delta]})
-
-    return (results, e_offset)
-
+            rlat = sta.latitude
+            rlon = sta.longitude
+            # Get epicentral distance
+            delta = locations2degrees(olat, olon, rlat, rlon)
+            # Handle positive elevations
+            rele = sta.elevation
+            rdep = -1.*rele
+            # Get maximum elevation
+            max_ele = max(oele, rele)
+            # Determine if offset is needed to adjust model datum
+            if max_ele > 0:
+                d_offset = -1.*max_ele
+            else:
+                d_offset = 0
+            # Calculate arrival times for specified phases
+            arrivals = model.arrivals(
+                distances=[delta],
+                zstart = odep - d_offset,
+                zstop = rdep - d_offset,
+                phases=phases
+            )
+            if arrivals == []:
+                breakpoint()
+            results.update({f'{net.code}.{sta.code}': [arrivals, d_offset]})
+    return results
 
 
 def model_raypaths_simple(model, origin, inventory, phases=['P','S']):
@@ -267,7 +318,7 @@ def ray2pick(ray, wfid, origin):
     t0 = origin.time
     ta = t0 + ray.t
     pick = Pick(time=ta,
-                phase_hint=ray.phase.path.given_name(),
+                phase_hint=ray.used_phase().given_name(),
                 waveform_id=wfid,
                 evaluation_mode='automatic',
                 time_errors=None)
@@ -316,7 +367,7 @@ def ray_summary(results, origin, inventory):
             line = [_sta,
                     dz_sta,
                     dz_orig,
-                    _arr.path.phase.given_name(),
+                    _arr.used_phase().given_name(),
                     _arr.p/cake.r2d,
                     _arr.x*(cake.d2r*cake.earthradius/cake.km),
                     _arr.t,
