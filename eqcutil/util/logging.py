@@ -34,7 +34,7 @@ class CriticalExitHandler(logging.Handler):
         if record.levelno == logging.CRITICAL:
             sys.exit(self.exit_code)
 
-def rich_error_message(e):
+def rich_error_message(e, additional_text=None):
     """Given the raw output of an "except Exception as e"
     formatted clause, return a string that emulates
     the error message print-out from python
@@ -49,7 +49,10 @@ def rich_error_message(e):
     """    
     etype = type(e).__name__
     emsg = str(e)
-    return f'{etype}: {emsg}'
+    if additional_text is not None:
+        return f'{etype}: {emsg} {additional_text}'
+    else:
+        return f'{etype}: {emsg}'
 
 
 def basic_logger_config(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"):
