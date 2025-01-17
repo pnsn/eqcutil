@@ -30,7 +30,7 @@ from eqcorrscan.utils.clustering import cluster, handle_distmat_nans, cross_chan
 from eqcutil.util.logging import rich_error_message
 
 
-Logger = logging.getLogger(__name__)
+module_logger = logging.getLogger(__name__)
 
 
 def distance_matrix(
@@ -97,15 +97,16 @@ Compute distance matrix for waveforms based on cross-correlations.
     # n_uniq_traces = len(uniq_traces)
 
     # Added safety catch for stream_list checking if there are multiple traces of the same id
-    stream_list = []
     uniq_traces = set([])
     for st in stream_list:
         if not isinstance(st, Stream):
-            Logger.warning()
+            module_logger.critical('One or more input elements of stream_list are not type obspy.Stream')
+        else:
+            st.sort()
         utid = set([tr.id for tr in st])
         if len(utid) != len(st):
-            Logger.warning('Multiple traces with same ID - may result in an abberent behavior when populating the shift-matrix')
-            Logger.warning('Consider using stream.merge() on input traces before using this method.')
+            module_logger.warning('Multiple traces with same ID - may result in an abberent behavior when populating the shift-matrix')
+            module_logger.warning('Consider using stream.merge() on input traces before using this method.')
         uniq_traces = uniq_traces.union(utid)
 
     n_uniq_traces = len(uniq_traces)
@@ -116,9 +117,11 @@ Compute distance matrix for waveforms based on cross-correlations.
     shift_mat[:] = np.nan
     shift_dict = dict()
     i = -1
+    if len(stream_list) == 0:
+        breakpoint()
     for master in tqdm(stream_list, disable=not progress_bar):
         i += 1
-        # Logger.debug(f'Distance matrix with master {i+1} of {len(stream_list)}')
+        #module_logger.debug(f'Distance matrix with master {i+1} of {len(stream_list)}')
         dist_list, shift_list = cross_chan_correlation(
             st1=master, streams=stream_list, shift_len=shift_len,
             allow_individual_trace_shifts=allow_individual_trace_shifts,
@@ -135,8 +138,8 @@ Compute distance matrix for waveforms based on cross-correlations.
             shift_mat[np.ix_([i], list(range(n_streams)), master_trace_indcs)] = (
                 shift_list[:, ~np.all(np.isnan(shift_list), axis=0)])
         except Exception as e:
-            Logger.warning(rich_error_message(e))
-            Logger.warning(f'Abberent behavior arose while populating shift-matrix for tempate index {i} - leaving as NaN entry')
+            module_logger.warning(rich_error_message(e))
+            module_logger.warning(f'Abberent behavior arose while populating shift-matrix for tempate index {i} - leaving as NaN entry')
 
             
         # Add trace-id with corresponding shift-matrix to shift-dictionary
@@ -165,14 +168,18 @@ Compute distance matrix for waveforms based on cross-correlations.
     return dist_mat, shift_mat.squeeze(), shift_dict
 
 
-def xcorr_cluster_core_process(
+def compute_pariwise_cross_correlations(
         template_list,
         shift_len=0,
         allow_individual_trace_shifts=True,
         replace_nan_distances_with='mean',
         cores='all'):
     """
-    Modified version of :meth:`~eqcorrscan.utils.clustering.cluster` that returns
+    The first half of :meth:`~eqcorrscan.utils.clustering.cluster`
+    allowing exposure of the dist_mat and shift_mat for subsequent
+    (re)analyses without having to re-run the cross correlation analysis
+
+    :param template_list: 
     
     """
     if cores == 'all':
@@ -182,15 +189,21 @@ def xcorr_cluster_core_process(
     # Extract streams from stream/index tuples
     stream_list = []
     for _x in template_list:
+        if len(_x) != 2:
+            module_logger.critical('template list entries must be 2-tuples of type (obspy.Stream, int)')
+        if not isinstance(_x[1], int):
+            module_logger.warning('template list index is not type int, may result in abberent behavior')
+        # Allow some resilliance if a trace is passed instead of a stream
         if not isinstance(_x[0], Stream):
             if isinstance(_x[0], Trace):
+                module_logger.debug(f'Trace for "{_x[0].id}" passed as template - wrapping in an obspy.Stream')
                 stream_list.append(Stream(_x[0]))
             else:
-                Logger.critical('One or more elements in template_list is not type Stream')
+                module_logger.critical('One or more elements in template_list is not type obspy.Stream')
         else:
             stream_list.append(_x[0])
     # Compute distance matrix, shift matrix, and shift dictionary
-    Logger.info('Computing the distance matrix using %i cores' % num_cores)
+    module_logger.info('Computing the distance matrix using %i cores' % num_cores)
     dist_mat, shift_mat, _ = distance_matrix(
         stream_list = stream_list,
         shift_len = shift_len,
@@ -202,19 +215,44 @@ def xcorr_cluster_core_process(
     dist_mat = handle_distmat_nans(dist_mat, replace_nan_distances_with=replace_nan_distances_with)
     return dist_mat, shift_mat
 
-def xcorr_cluster_post_process(
-        dist_mat, corr_thresh=0.5,
-        method='single', metric='euclidian', optimal_ordering=False,
+def cluster_correlated_templates(
+        dist_mat, 
+        template_list,
+        corr_thresh=0.5,
+        method='single', 
+        metric='euclidian', 
+        optimal_ordering=False,
         criterion='distance'):
-    if np.any(not np.isfinite(dist_mat)):
-        Logger.critical('dist_mat has non-finite entries - filling needs to be applied')
+    if not np.isfinite(dist_mat).all():
+        module_logger.critical('dist_mat has non-finite entries - filling needs to be applied')
     if not 0 < corr_thresh < 1:
-        Logger.critical('corr_thresh is outside bounds of (0,1)')
+        module_logger.critical('corr_thresh is outside bounds of (0,1)')
     dist_vect = squareform(dist_mat)
     Z = linkage(dist_vect, method=method, metric=metric, optimal_ordering=optimal_ordering)
     indices = fcluster(Z, t=1 - corr_thresh, criterion=criterion)
-    groups = list(set(indices))
-
+    # Indices start at 1...
+    group_ids = list(set(indices))  # Unique list of group ids
+    module_logger.info(' '.join(['Found', str(len(group_ids)), 'groups']))
+    # Convert to tuple of (group id, stream id)
+    indices = [(indices[i], i) for i in range(len(indices))]
+    # Sort by group id
+    indices.sort(key=lambda tup: tup[0])
+    groups = []
+    module_logger.info('Extracting and grouping')
+    for group_id in group_ids:
+        group = []
+        for ind in indices:
+            if ind[0] == group_id:
+                group.append(template_list[ind[1]])
+            elif ind[0] > group_id:
+                # Because we have sorted by group id, when the index is greater
+                # than the group_id we can break the inner loop.
+                # Patch applied by CJC 05/11/2015
+                groups.append(group)
+                break
+    # Catch the final group
+    groups.append(group)
+    return groups
 
 def catalog_cluster(catalog, thresh, metric='distance', show=False):
     """Alias to EQcorrscan :meth:`~eqcorrscan.utils.clustering.catalog_cluster`
@@ -361,7 +399,7 @@ def cross_corr_cluster(
     stream_list = [x[0] for x in template_list]
 
     # Compute the distance matrix
-    Logger.info('Computing the distance matrix using %i cores' % num_cores)
+    module_logger.info('Computing the distance matrix using %i cores' % num_cores)
     dist_mat, shift_mat, shift_dict = distance_matrix(
         stream_list=stream_list,
         shift_len=shift_len,
@@ -373,30 +411,30 @@ def cross_corr_cluster(
     if save_path:
         # Save distance matrix
         np.save(os.path.join(save_path, 'dist_mat.npy'), dist_mat)
-        Logger.info('Saved the distance matrix as dist_mat.npy')
+        module_logger.info('Saved the distance matrix as dist_mat.npy')
         np.save(os.path.join(save_path, 'shift_mat.npy'), shift_mat)
-        Logger.info('Saved the shift matrix as shift_mat.npy')
+        module_logger.info('Saved the shift matrix as shift_mat.npy')
     
     # Calculate linkage
-    Logger.info('Computing linkage')
+    module_logger.info('Computing linkage')
     dist_mat = handle_distmat_nans(dist_mat,
                                    replace_nan_distances_with=fill_value)
     dist_vec = squareform(dist_mat)
     Z = linkage(dist_vec, **kwargs)
 
     # Get the indices of the groups
-    Logger.info('Clustering')
+    module_logger.info('Clustering')
     indices = fcluster(Z, t=1 - corr_thresh, criterion='distance')
     # Indices start at 1...
     group_ids = list(set(indices))  # Unique list of group ids
-    Logger.info(' '.join(['Found', str(len(group_ids)), 'groups']))
+    module_logger.info(' '.join(['Found', str(len(group_ids)), 'groups']))
     # Convert to tuple of (group id, stream id)
     indices = [(indices[i], i) for i in range(len(indices))]
 
     # Sort by group id
     indices.sort(key=lambda tup: tup[0])
     groups = []
-    Logger.info('Extracting and grouping')
+    module_logger.info('Extracting and grouping')
     for group_id in group_ids:
         group = []
         for ind in indices:
@@ -423,7 +461,7 @@ def cross_corr_cluster(
 
     # OPTIONAL - Show the dendrogram
     if show:
-        Logger.info('Plotting the dendrogram')
+        module_logger.info('Plotting the dendrogram')
         dendrogram(Z, color_threshold=1 - corr_thresh,
                    distance_sort='ascending')
         plt.show()

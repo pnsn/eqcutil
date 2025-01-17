@@ -30,11 +30,11 @@ from eqcorrscan import Tribe, Template
 import eqcorrscan.utils.clustering as euc
 from eqcorrscan.core.match_filter.helpers import _safemembers, _par_read
 
-from eqcutil.process.clustering import xcorr_cluster_core_process, xcorr_cluster_post_process
+from eqcutil.process.clustering import compute_pariwise_cross_correlations, cluster_correlated_templates
 from eqcutil.util.pandas import reindex_columns
 from eqcutil.viz import eqc_compat
 
-Logger = logging.getLogger(__name__)
+module_logger = logging.getLogger(__name__)
 
 class ClusteringTribe(Tribe):
     """An augmentation of the :class:`~eqcorrscan.Tribe` class that
@@ -85,6 +85,8 @@ class ClusteringTribe(Tribe):
         
         for template in templates:
             self.extend(template)
+        self.logger = logging.getLogger('eqcutil.core.clusteringtribe.ClusteringTribe')
+
 
     def extend(self, other, **options):
         """Extend this ClusteringTribe with more :class:`~eqcorrscan.Template`
@@ -107,7 +109,7 @@ class ClusteringTribe(Tribe):
                 for tempate in other:
                     self.add_template(template,**options)
         else:
-            Logger.warning(f'type of other does not conform with ClusteringTribe.extend')
+            self.logger.warning(f'type of other does not conform with ClusteringTribe.extend')
 
     def __iadd__(self, other):
         self.extend(other)
@@ -239,15 +241,19 @@ class ClusteringTribe(Tribe):
             # Update kwargs for saving purposes
             kwargs.update(pp_defaults)
             kwargs.update(cp_defaults)
+            template_list = self._get_template_list()
             # Run main process
-            dist_mat, shift_mat = xcorr_cluster_core_process(
-                self._get_template_list(), **cp_defaults
+            dist_mat, shift_mat = compute_pariwise_cross_correlations(
+                template_list=template_list, **cp_defaults
             )
             # Save dist_mat and shift_mat to attributes
             self.dist_mat = dist_mat
             self.shift_mat = shift_mat
             # Get groups from post processing
-            groups = xcorr_cluster_post_process(self.dist_mat, **pp_defaults)
+            groups = cluster_correlated_templates(
+                dist_mat = self.dist_mat, 
+                template_list = template_list,
+                **pp_defaults)
 
             for _e, group in enumerate(groups):
                 for entry in group:
@@ -323,7 +329,7 @@ class ClusteringTribe(Tribe):
         if self.clusters is None:
             return 
         elif method not in self.clusters.columns:
-            Logger.warning(f'cluster method {method} not yet run on this ClusteringTribe')
+            self.logger.warning(f'cluster method {method} not yet run on this ClusteringTribe')
         names = self.clusters[self.clusters[method] == index].index.values
         return self.get_subset(names)
 
@@ -337,13 +343,13 @@ class ClusteringTribe(Tribe):
         """        
         # Critical error if correlation clustering has not been run
         if method not in self.clusters.columns:
-            Logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
+            self.logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
         # Otherwise grab clustering kwargs as the default kwargs for `linkage`
         else:
             ckw = self.cluster_kwargs[method]
         # Critical error if distance matrix is not pre-calculated
         if self.dist_mat is None:
-            Logger.critical('dist_mat not populated')
+            self.logger.critical('dist_mat not populated')
         # If distance matrix is present, proceed
         else:
             # Get linkage inputs
@@ -379,7 +385,7 @@ class ClusteringTribe(Tribe):
         :rtype: _type_
         """        
         if method not in self.clusters.columns:
-            Logger.critical(f'{method} has not been run on this ClusteringTribe')
+            self.logger.critical(f'{method} has not been run on this ClusteringTribe')
         else:
             ckw = self.cluster_kwargs[method]
         if 'precision' in kwargs.keys():
@@ -389,13 +395,13 @@ class ClusteringTribe(Tribe):
         Z = self._get_linkage(**kwargs)
 
         if not isinstance(corr_thresh, float):
-            Logger.critical(f'corr_thresh must be type float')
+            self.logger.critical(f'corr_thresh must be type float')
         elif not 0 < corr_thresh <= 1:
-            Logger.critical(f'corr_thresh must be in (0, 1)')
+            self.logger.critical(f'corr_thresh must be in (0, 1)')
         
         if corr_thresh == ckw['corr_thresh']:
             if not inplace:
-                Logger.info(f'Already grouped for corr_thresh={corr_thresh}')
+                self.logger.info(f'Already grouped for corr_thresh={corr_thresh}')
             return self.clusters[method]
         else:
             # Get new grouping
@@ -433,7 +439,7 @@ class ClusteringTribe(Tribe):
         :rtype: _type_
         """        
         if method not in self.clusters.columns:
-            Logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
+            self.logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
         
         lkwargs = {}
         for _k, _v in kwargs.items():
@@ -601,7 +607,7 @@ class ClusteringTribe(Tribe):
         # Run compression if specified
         if compress:
             if not filename.endswith(".tgz"):
-                Logger.info("Appending '.tgz' to filename.")
+                self.logger.info("Appending '.tgz' to filename.")
                 filename += ".tgz"
             with tarfile.open(filename, "w:gz") as tar:
                 tar.add(dirname, arcname=os.path.basename(dirname))
@@ -684,10 +690,10 @@ class ClusteringTribe(Tribe):
             t_file = [t for t in t_files
                       if t.split(os.sep)[-1] == template.name + '.ms']
             if len(t_file) == 0:
-                Logger.error('No waveform for template: ' + template.name)
+                self.logger.error('No waveform for template: ' + template.name)
                 continue
             elif len(t_file) > 1:
-                Logger.warning('Multiple waveforms found, using: ' + t_file[0])
+                self.logger.warning('Multiple waveforms found, using: ' + t_file[0])
             template.st = read(t_file[0])
         # Remove templates that do not have streams
         templates = [t for t in templates if t.st is not None]
@@ -708,7 +714,7 @@ class ClusteringTribe(Tribe):
                 else:
                     self.clusters = pd.concat([self.clusters, clusters], axis=0, ignore_index=False)
             else:
-                Logger.error('cluster_group file names loaded do not match template names loaded')
+                self.logger.error('cluster_group file names loaded do not match template names loaded')
 
         # Reconstitute processing information
         for ckf in cluster_kwarg_files:
@@ -932,6 +938,6 @@ class ClusteringTribe(Tribe):
     #     gfile = os.path.join(loaddir, 'groups.csv')
     #     pfile = os.path.join()
     #     if not os.path.isfile(os.path.join(loaddir,'groups.csv')):
-    #         Logger.critical(f'could not find groups.csv in {loaddir}')
+    #         self.logger.critical(f'could not find groups.csv in {loaddir}')
     #     else:
     #         with open()
