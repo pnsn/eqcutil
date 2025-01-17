@@ -14,7 +14,7 @@ TODO: Consider making this a class that contains
 import logging
 import pandas as pd
 from obspy import Inventory
-from obspy.core.event import Pick, Arrival, WaveformStreamID, Origin
+from obspy.core.event import Pick, Arrival, WaveformStreamID, Origin, ResourceIdentifier
 from obspy.geodetics import locations2degrees
 from pyrocko import cake
 
@@ -78,19 +78,24 @@ def model_picks(origin, inventory, model_name='P4', phases=['P','S']):
     
     model = make_model(name=model_name)
     results = model_raypaths(model, origin, inventory, phases=phases)
+    # If modelling does not produce arrivals
+    if results == []:
+        breakpoint()
     picks = []
     # Convert rays to picks
     for net in inventory.networks:
         for sta in net.stations:
-            rays, e_offset = results[f'{net.code}.{sta.code}']
             wfid = WaveformStreamID(
                 network_code=net.code,
                 station_code=sta.code,
                 location_code=sta.channels[0].location_code,
                 channel_code=sta.channels[0].code
             )
+            method_str = f'smi:local/pyrocko/cake/{model_name}'
+            rays, e_offset, routing = results[f'{net.code}.{sta.code}']
+            method_str = f'{method_str}/{e_offset:.3f}/{routing}'
             for ray in rays:
-                pick = ray2pick(ray, wfid, origin)
+                pick = ray2pick(ray, wfid, origin, method_str)
                 picks.append(pick)
     return picks
 
@@ -235,9 +240,18 @@ def model_raypaths(model, origin, inventory, phases=['P','S']):
                 zstop = rdep - d_offset,
                 phases=phases
             )
+            routing = 's2r'
+            # If the source-to-receiver ray does not populate
+            # try reversing the propagation direction
             if arrivals == []:
-                breakpoint()
-            results.update({f'{net.code}.{sta.code}': [arrivals, d_offset]})
+                arrivals = model.arrivals(
+                    distances=[delta],
+                    zstart=rdep - d_offset,
+                    zstop=odep - d_offset,
+                    phases=phases
+                )
+                routing = 'r2s'
+            results.update({f'{net.code}.{sta.code}': [arrivals, d_offset, routing]})
     return results
 
 
@@ -302,7 +316,7 @@ def make_wfid(nslc, resource_uri=None):
     """    
     return WaveformStreamID(seed_string=nslc, resource_uri=resource_uri)
 
-def ray2pick(ray, wfid, origin):
+def ray2pick(ray, wfid, origin, method_str):
     """
     Create a :class:`~obspy.core.event.Pick` representation of
       a :class:`~pyrocko.cake.RayPath` object
@@ -317,10 +331,12 @@ def ray2pick(ray, wfid, origin):
     """    
     t0 = origin.time
     ta = t0 + ray.t
+    mid = method_str
     pick = Pick(time=ta,
                 phase_hint=ray.used_phase().given_name(),
                 waveform_id=wfid,
                 evaluation_mode='automatic',
+                method_id=ResourceIdentifier(id=mid),
                 time_errors=None)
     return pick
 
