@@ -35,7 +35,7 @@ def reindex_series(ser, ascending=False, inplace=True, start_int=1):
 def reindex_columns(df, columns, ascending=False, inplace=False, start_int=1):
     if isinstance(df, pd.Series):
         if columns == df.name:
-            out = reindex_series(df, ascending=ascending, inplace=inplace, start_int=start_int)
+            out = reindex_series(df, ascending=ascending, inplace=inplace, start_int=start_int);
         else:
             raise KeyError
     elif isinstance(df, pd.DataFrame):
@@ -56,7 +56,7 @@ def reindex_columns(df, columns, ascending=False, inplace=False, start_int=1):
     else:
         out = df
     for col in columns:
-        _ = reindex_series(df[col], ascending=ascending, inplace=True, start_int=start_int)
+        _ = reindex_series(df[col], ascending=ascending, inplace=True, start_int=start_int);
     
     return out
 
