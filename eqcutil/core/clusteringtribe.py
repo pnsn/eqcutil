@@ -30,6 +30,7 @@ from eqcorrscan import Tribe, Template
 import eqcorrscan.utils.clustering as euc
 from eqcorrscan.core.match_filter.helpers import _safemembers, _par_read
 
+from eqcutil.process.clustering import xcorr_cluster_core_process, xcorr_cluster_post_process
 from eqcutil.util.pandas import reindex_columns
 from eqcutil.viz import eqc_compat
 
@@ -71,6 +72,7 @@ class ClusteringTribe(Tribe):
 
         self.clusters = pd.DataFrame(columns=['id_no'])
         self.dist_mat = None
+        self.shift_mat = None
         self.cluster_kwargs = {}
 
         if isinstance(templates, Template):
@@ -219,6 +221,41 @@ class ClusteringTribe(Tribe):
                     except:
                         breakpoint()
                     values.append(_e)
+        elif method == 'xcc':
+            cp_defaults = {'shift_len': 0.,
+                        'allow_individual_trace_shifts': True,
+                        'replace_nan_distances_with': 'mean',
+                        'cores': 'all'}
+            pp_defaults = {'corr_thresh': 0.5,
+                           'method': 'single',
+                           'metric': 'euclidian',
+                           'optimal_ordering': False,
+                           'criterion':'distance'}
+            for _k, _v in kwargs.items():
+                if _k in cp_defaults.keys():
+                    cp_defaults.update({_k:_v})
+                if _k in pp_defaults.keys():
+                    pp_defaults.update({_k:_v})
+            # Update kwargs for saving purposes
+            kwargs.update(pp_defaults)
+            kwargs.update(cp_defaults)
+            # Run main process
+            dist_mat, shift_mat = xcorr_cluster_core_process(
+                self._get_template_list(), **cp_defaults
+            )
+            # Save dist_mat and shift_mat to attributes
+            self.dist_mat = dist_mat
+            self.shift_mat = shift_mat
+            # Get groups from post processing
+            groups = xcorr_cluster_post_process(self.dist_mat, **pp_defaults)
+
+            for _e, group in enumerate(groups):
+                for entry in group:
+                    try:
+                        index.append(self.templates[entry[1]].name)
+                    except:
+                        breakpoint()
+                    values.append(_e)
         else:
             raise ValueError(f'method {method} not supported.')
 
@@ -291,27 +328,36 @@ class ClusteringTribe(Tribe):
         return self.get_subset(names)
 
 
-    def _get_linkage(self, **kwargs):
+    def _get_linkage(self, method='xcc', **kwargs):
         """Perform hierarchical/agglomerative clustering on the templates in this
         Cluster
 
         :return:
          - **Z** (*numpy.ndarray*) -- linkage matrix
         """        
-        if 'correlation_cluster' not in self.clusters.columns:
-            Logger.critical(f'correlation clustering has not been run on this ClusteringTribe')
+        # Critical error if correlation clustering has not been run
+        if method not in self.clusters.columns:
+            Logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
+        # Otherwise grab clustering kwargs as the default kwargs for `linkage`
         else:
-            ckw = self.cluster_kwargs['correlation_cluster']
+            ckw = self.cluster_kwargs[method]
+        # Critical error if distance matrix is not pre-calculated
         if self.dist_mat is None:
             Logger.critical('dist_mat not populated')
+        # If distance matrix is present, proceed
         else:
             # Get linkage inputs
             rndw = ckw['replace_nan_distances_with']
-            for _k, _v in [('method','single'), ('metric', 'euclidian'), ('optimal_ordering', False)]:
-                if _k in ckw.keys() and _k not in kwargs.keys():
+            for _k in ['method','metric','optimal_ordering']:
+                # If one of these kwargs was provided in the method call, use it
+                if _k in kwargs.keys():
+                    continue
+                # Otherwise, if it was specified during correlation_cluster-ing, use that
+                elif _k in ckw.keys():
                     kwargs.update({_k: ckw[_k]})
+                # If kwarg was unspecified, skip to use defaults from linkage
                 else:
-                    kwargs.update({_k: _v})
+                    continue
 
             dm = self.dist_mat
             # Apply fill
@@ -322,7 +368,7 @@ class ClusteringTribe(Tribe):
             Z = linkage(dist_vect, **kwargs)
             return Z
 
-    def cct_regroup(self, corr_thresh, inplace=False, **kwargs):
+    def cct_regroup(self, corr_thresh, method='xcc', inplace=False, **kwargs):
         """Regroup cross-correlated templates at a different correlation
         threshold with options to re-define the linkage parameterization
     
@@ -332,10 +378,10 @@ class ClusteringTribe(Tribe):
         :return: _description_
         :rtype: _type_
         """        
-        if 'correlation_cluster' not in self.clusters.columns:
-            Logger.critical(f'correlation clustering has not been run on this ClusteringTribe')
+        if method not in self.clusters.columns:
+            Logger.critical(f'{method} has not been run on this ClusteringTribe')
         else:
-            ckw = self.cluster_kwargs['correlation_cluster']
+            ckw = self.cluster_kwargs[method]
         if 'precision' in kwargs.keys():
             prec = kwargs.pop('precision')
         else:
@@ -350,39 +396,53 @@ class ClusteringTribe(Tribe):
         if corr_thresh == ckw['corr_thresh']:
             if not inplace:
                 Logger.info(f'Already grouped for corr_thresh={corr_thresh}')
-            return self.clusters['correlation_cluster']
+            return self.clusters[method]
         else:
             # Get new grouping
             indices = euc.fcluster(Z, t= 1 - corr_thresh, criterion='distance')
-            output = pd.Series(data=indices, index=self.clusters.index, name='correlation_cluster')
+            output = pd.Series(data=indices, index=self.clusters.index, name=method)
             if inplace:
-                self.clusters.correlation_cluster=indices
+                self.clusters[method]=indices
                 ckw['corr_thresh'] = np.round(corr_thresh,decimals=prec)
             else:
                 return output
         
-    def dendrogram(self, xlabels='index', corr_thresh=None, scalar=False, **kwargs):
+    def dendrogram(self, xlabels='index', corr_thresh=None, scalar=False, method='xcc', **kwargs):
         """Wrapper for :meth:`~scipy.cluster.hierarchy.dendrogram` that uses
         saved attribute values from a running :meth:`~.ClusteringTribe.cluster`
-        with method='correlation_cluster' to produce a dendrogram plot
+        with method='correlation_cluster' or 'xcc' to produce a dendrogram plot
 
+        :param xlabels: Column names from this :class:`~.CorrelationCluster`
+            object's **clusters** attribute to use to populate labels on the
+            x-axis of this dendrogram. Defaults to 'index', optional
         :param corr_thresh: correlation threshold to use for defining clusters,
-            displayed cutoffs are defaults to None
-        :type corr_thresh: _type_, optional
-        :return: _description_
+            displayed cutoffs are shown as 1-corr_thresh. Defaults to None
+            None uses the correlation_cluster corr_thresh saved in this
+            :class:`~.ClusteringTribe` object's **cluster_kwargs** attribute
+        :type corr_thresh: None or float, optional
+        :param scalar: list of scalars to apply to items in **xlabels**, with
+            None inputs skipping a scalar transform on values associated
+            with matching elements in **xlabels**, defaults to False
+            e.g., if xlabels=['etype','depth'], one might use
+            scalar=[None, 1e-3] to convert depths to kilometers, but not
+            attempt to multiply string entries in etype. 
+            False turns off any assessment of scalars for entries in **xlabels**
+        :type scalar: list of float-like values or False, optional
+        :param kwargs: key-word argument collector passed to :meth:`~.dendrogram`
+        :return: **R** (*dict*) -- output
         :rtype: _type_
         """        
-        if 'correlation_cluster' not in self.clusters.columns:
-            Logger.critical(f'correlation clustering has not been run on this ClusteringTribe')
+        if method not in self.clusters.columns:
+            Logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
         
         lkwargs = {}
         for _k, _v in kwargs.items():
             if _k in ['method','metric','optimal_ordering']:
-                lkwargs.update({_k, kwargs.pop(_k)})
+                lkwargs.update({_k: kwargs.pop(_k)})
 
         Z = self._get_linkage(**lkwargs)
         if corr_thresh is None:
-            threshold = 1 - self.cluster_kwargs['correlation_cluster']['corr_thresh']
+            threshold = 1 - self.cluster_kwargs[method]['corr_thresh']
         else:
             threshold = 1 - corr_thresh
 
@@ -447,7 +507,7 @@ class ClusteringTribe(Tribe):
         else:
             ax.set_xlabel('Entry Number')
         ax.set_ylabel('Linkage Distance\n[1 - corr]')
-        ckw = self.cluster_kwargs['correlation_cluster']
+        ckw = self.cluster_kwargs[method]
         title += f'Fill Value: {ckw["replace_nan_distances_with"]} | '
         title += f'Corr Thresh: {1 - threshold:.3f} | Shift Length: {ckw["shift_len"]} sec'
         title += f' | Individual Shifts: {ckw["allow_individual_trace_shifts"]}'
@@ -532,9 +592,12 @@ class ClusteringTribe(Tribe):
                         file.write(f'{_l},{_w}\n')
                     else:
                         file.write(f'{_l},{repr(_w)}\n')
+        # Write dist_mat to disk
         if self.dist_mat is not None:
             np.save(os.path.join(dirname,'dist_mat.npy'), np.array(self.dist_mat))
-
+        # Write shift_mat to disk
+        if self.shift_mat is not None:
+            np.save(os.path.join(dirname,'shift_mat.npy'), np.array(self.shift_mat))
         # Run compression if specified
         if compress:
             if not filename.endswith(".tgz"):
@@ -600,6 +663,8 @@ class ClusteringTribe(Tribe):
         cluster_kwarg_files = glob.glob(os.path.join(dirname,'*_kwargs.csv'))
         # NEW - distance matrix file
         dist_mat_file = glob.glob(os.path.join(dirname, 'dist_mat.npy'))
+        # NEW - shift matrix file
+        shift_mat_file = glob.glob(os.path.join(dirname, 'shift_mat.npy'))
         # Load catalog if it is present
         if len(tribe_cat_file) != 0:
             tribe_cat = read_events(tribe_cat_file[0])
@@ -672,9 +737,12 @@ class ClusteringTribe(Tribe):
                 #     self.cluster_kwargs[ctype].update({_k: _r.values[0]})
                 
         # Load dist_mat
-        if len(dist_mat_file) > 0:
+        if len(dist_mat_file) == 1:
             dist_mat = np.load(dist_mat_file[0])
             self.dist_mat = dist_mat
+        if len(shift_mat_file) == 1:
+            shift_mat = np.load(shift_mat_file[0])
+            self.shift_mat = shift_mat
         return
 
     def select_template_traces(self, remove_empty_templates=True, **kwargs):

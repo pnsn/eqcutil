@@ -18,21 +18,202 @@ import os, logging
 from pathlib import Path
 from multiprocessing import cpu_count
 
+from tqdm import tqdm
 import numpy as np
-from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
 from scipy.spatial.distance import squareform
 
+from obspy import Trace, Stream
 from eqcorrscan import Template, Tribe
-from eqcorrscan.utils.clustering import cluster, handle_distmat_nans, distance_matrix, fcluster
+from eqcorrscan.utils.clustering import cluster, handle_distmat_nans, cross_chan_correlation
 
+from eqcutil.util.logging import rich_error_message
 
 
 Logger = logging.getLogger(__name__)
 
 
+def distance_matrix(
+        stream_list, shift_len=0.0,
+        replace_nan_distances_with='mean',
+        allow_individual_trace_shifts=True,
+        cores=1, progress_bar=True
+    ):
+    """ :meth:`~eqcorrscan.utils.clustering.distance_matrix` with 
+    a few additional safety catches added, inclusion of a tqdm progress
+    bar, and modified default input values
+
+Compute distance matrix for waveforms based on cross-correlations.
+
+    Function to compute the distance matrix for all templates - will give
+    distance as 1-abs(cccoh), e.g. a well correlated pair of templates will
+    have small distances, and an equally well correlated reverse image will
+    have the same distance as a positively correlated image - this is an issue.
+
+    :type stream_list: list
+    :param stream_list:
+        List of the :class:`obspy.core.stream.Stream` to compute the distance
+        matrix for
+    :type shift_len: float, optional
+    :param shift_len: How many seconds for templates to shift
+        Defaults to 0.
+    :type allow_individual_trace_shifts: bool, optional
+    :param allow_individual_trace_shifts:
+        Controls whether templates are shifted by shift_len in relation to the
+        picks as a whole, or whether each trace can be shifted individually.
+        Defaults to True.
+    :type replace_nan_distances_with: None, 'mean', 'min', or float, optional
+    :param replace_nan_distances_with:
+        Controls how the clustering handles nan-distances in the distance
+        matrix. None/False only performs a check, while other choices (e.g.,
+        1, 'mean', 'min' or float) replace nans in the distance matrix.
+        Defaults to 'mean'
+    :type cores: int
+    :param cores: Number of cores to parallel process using, defaults to 1.
+
+    :returns:
+        - distance matrix (:py:class:`numpy.ndarray`) of size
+          len(stream_list)**2
+        - shift matrix (:py:class:`numpy.ndarray`) containing shifts between
+          traces of the sorted streams. Size is len(stream_list)**2 * x, where
+          x is 1 for shift_len=0 and/or allow_individual_trace_shifts=False.
+          Missing correlations are indicated by nans.
+        - shift dict (:py:class:`dict`):
+          dictionary of (template_id: trace_dict) where trace_dict contains
+          (trace.id: shift matrix (size `len(stream_list)**2`) for trace.id)
+
+    .. warning::
+        Because distance is given as :math:`1-abs(coherence)`, negatively
+        correlated and positively correlated objects are given the same
+        distance.
+
+    .. note::
+        Requires all traces to have the same sampling rate and same length.
+    """    
+    n_streams = len(stream_list)
+    # May have to allow duplicate channels for P- and S-picks at each station
+    # stream_list = [st.sort() for st in stream_list]
+    # uniq_traces = set([tr.id for st in stream_list for tr in st])
+    # n_uniq_traces = len(uniq_traces)
+
+    # Added safety catch for stream_list checking if there are multiple traces of the same id
+    stream_list = []
+    uniq_traces = set([])
+    for st in stream_list:
+        if not isinstance(st, Stream):
+            Logger.warning()
+        utid = set([tr.id for tr in st])
+        if len(utid) != len(st):
+            Logger.warning('Multiple traces with same ID - may result in an abberent behavior when populating the shift-matrix')
+            Logger.warning('Consider using stream.merge() on input traces before using this method.')
+        uniq_traces = uniq_traces.union(utid)
+
+    n_uniq_traces = len(uniq_traces)
+
+    # Initialize square matrix
+    dist_mat = np.zeros([n_streams, n_streams])
+    shift_mat = np.empty([n_streams, n_streams, n_uniq_traces])
+    shift_mat[:] = np.nan
+    shift_dict = dict()
+    i = -1
+    for master in tqdm(stream_list, disable=not progress_bar):
+        i += 1
+        # Logger.debug(f'Distance matrix with master {i+1} of {len(stream_list)}')
+        dist_list, shift_list = cross_chan_correlation(
+            st1=master, streams=stream_list, shift_len=shift_len,
+            allow_individual_trace_shifts=allow_individual_trace_shifts,
+            xcorr_func='fftw', cores=cores)
+        dist_mat[i] = 1 - dist_list
+        master_ids = [tr.id for tr in master]
+        master_trace_indcs = [
+            j for j, tr_id in enumerate(uniq_traces) if tr_id in master_ids]
+        # Sort computed shifts into shift-matrix. shift_list could contain a
+        # nan-column that needs to be ignored here (only when earliest trace is
+        # missing)
+        # Wrapped this segment to avoid crashes coming from multiple traces of the same id
+        try:
+            shift_mat[np.ix_([i], list(range(n_streams)), master_trace_indcs)] = (
+                shift_list[:, ~np.all(np.isnan(shift_list), axis=0)])
+        except Exception as e:
+            Logger.warning(rich_error_message(e))
+            Logger.warning(f'Abberent behavior arose while populating shift-matrix for tempate index {i} - leaving as NaN entry')
+
+            
+        # Add trace-id with corresponding shift-matrix to shift-dictionary
+        shift_mat_list = [shift_mat[:, :, mti] for mti in master_trace_indcs]
+        trace_shift_dict = dict(zip(master_ids, shift_mat_list))
+        shift_dict[i] = trace_shift_dict
+    if shift_len == 0:
+        dist_mat = handle_distmat_nans(
+            dist_mat, replace_nan_distances_with=replace_nan_distances_with)
+    else:
+        # get the shortest distance for each correlation pair
+        dist_mat_shortest = np.minimum(dist_mat, dist_mat.T)
+        # Indicator says which matrix has shortest dist: value 0: mat2; 1: mat1
+        mat_indicator = dist_mat_shortest == dist_mat
+        mat_indicator = np.repeat(mat_indicator[:, :, np.newaxis],
+                                  n_uniq_traces, axis=2)[:, :]
+        # Get shift for the shortest distances
+        shift_mat = (
+            shift_mat * mat_indicator +
+            np.transpose(shift_mat, [1, 0, 2]) * (1 - mat_indicator))
+        dist_mat = dist_mat_shortest
+    # Squeeze matrix to 2 axis (ignore nans) if 3rd dimension not needed
+    if shift_len == 0 or allow_individual_trace_shifts is False:
+        shift_mat = np.nanmean(shift_mat, axis=2)
+    np.fill_diagonal(dist_mat, 0)
+    return dist_mat, shift_mat.squeeze(), shift_dict
 
 
+def xcorr_cluster_core_process(
+        template_list,
+        shift_len=0,
+        allow_individual_trace_shifts=True,
+        replace_nan_distances_with='mean',
+        cores='all'):
+    """
+    Modified version of :meth:`~eqcorrscan.utils.clustering.cluster` that returns
+    
+    """
+    if cores == 'all':
+        num_cores = cpu_count()
+    else:
+        num_cores = cores
+    # Extract streams from stream/index tuples
+    stream_list = []
+    for _x in template_list:
+        if not isinstance(_x[0], Stream):
+            if isinstance(_x[0], Trace):
+                stream_list.append(Stream(_x[0]))
+            else:
+                Logger.critical('One or more elements in template_list is not type Stream')
+        else:
+            stream_list.append(_x[0])
+    # Compute distance matrix, shift matrix, and shift dictionary
+    Logger.info('Computing the distance matrix using %i cores' % num_cores)
+    dist_mat, shift_mat, _ = distance_matrix(
+        stream_list = stream_list,
+        shift_len = shift_len,
+        cores=num_cores,
+        replace_nan_distances_with=replace_nan_distances_with,
+        allow_individual_trace_shifts=allow_individual_trace_shifts
+    )
+    # Handle nan entries in dist_mat
+    dist_mat = handle_distmat_nans(dist_mat, replace_nan_distances_with=replace_nan_distances_with)
+    return dist_mat, shift_mat
 
+def xcorr_cluster_post_process(
+        dist_mat, corr_thresh=0.5,
+        method='single', metric='euclidian', optimal_ordering=False,
+        criterion='distance'):
+    if np.any(not np.isfinite(dist_mat)):
+        Logger.critical('dist_mat has non-finite entries - filling needs to be applied')
+    if not 0 < corr_thresh < 1:
+        Logger.critical('corr_thresh is outside bounds of (0,1)')
+    dist_vect = squareform(dist_mat)
+    Z = linkage(dist_vect, method=method, metric=metric, optimal_ordering=optimal_ordering)
+    indices = fcluster(Z, t=1 - corr_thresh, criterion=criterion)
+    groups = list(set(indices))
 
 
 def catalog_cluster(catalog, thresh, metric='distance', show=False):
@@ -188,11 +369,12 @@ def cross_corr_cluster(
         replace_nan_distances_with=fill_value,
         allow_individual_trace_shifts=allow_individual_trace_shifts)
     # Save outputs
+
     if save_path:
         # Save distance matrix
         np.save(os.path.join(save_path, 'dist_mat.npy'), dist_mat)
         Logger.info('Saved the distance matrix as dist_mat.npy')
-        np.save(os.path.join(save_path, 'shift_mat.npy') shift_mat)
+        np.save(os.path.join(save_path, 'shift_mat.npy'), shift_mat)
         Logger.info('Saved the shift matrix as shift_mat.npy')
     
     # Calculate linkage
