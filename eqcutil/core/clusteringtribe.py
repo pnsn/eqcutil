@@ -304,6 +304,11 @@ class ClusteringTribe(Tribe):
             for xx,ii in enumerate(subset.clusters.id_no.values):
                 for yy,jj in enumerate(subset.clusters.id_no.values):
                     subset.dist_mat[xx,yy] = self.dist_mat[ii,jj]
+        if self.shift_mat is not None:
+            subset.shift_mat = np.full(shape=(len(names), len(names)), fill_value=np.nan)
+            for xx,ii in enumerate(subset.clusters.id_no.values):
+                for yy,jj in enumerate(subset.clusters.id_no.values):
+                    subset.shift_mat[xx,yy] = self.shift_mat[ii,jj]
         # return subset
         return subset
     
