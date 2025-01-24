@@ -305,10 +305,14 @@ class ClusteringTribe(Tribe):
                 for yy,jj in enumerate(subset.clusters.id_no.values):
                     subset.dist_mat[xx,yy] = self.dist_mat[ii,jj]
         if self.shift_mat is not None:
-            subset.shift_mat = np.full(shape=(len(names), len(names)), fill_value=np.nan)
+            if np.ndim(self.shift_mat) == 2:
+                shp = (len(names), len(names))
+            elif np.ndim(self.shift_mat) == 3:
+                shp = (len(names), len(names), self.shift_mat.shape[-1])
+            subset.shift_mat = np.full(shape=shp, fill_value=np.nan)
             for xx,ii in enumerate(subset.clusters.id_no.values):
                 for yy,jj in enumerate(subset.clusters.id_no.values):
-                    subset.shift_mat[xx,yy] = self.shift_mat[ii,jj]
+                    subset.shift_mat[xx,yy,...] = self.shift_mat[ii,jj,...]
         # return subset
         return subset
     
@@ -803,7 +807,7 @@ class ClusteringTribe(Tribe):
             # remove the template
             Tribe.remove(self, template)
 
-    def reindex_columns(self, group='correlation_cluster', ascending=False):
+    def reindex_columns(self, group='xcc', ascending=False):
         """Reindex a specified group by decending (or ascending)
         number of members
 
@@ -815,6 +819,84 @@ class ClusteringTribe(Tribe):
         return reindex_columns(self.clusters, group, ascending=ascending, inplace=True)
                 
         
+    def populate_event_metadata(self, preferred_origin=True, etype='from_event_comments'):
+        holder = []
+        for _tmp in self:
+            event = _tmp.event
+            if preferred_origin:
+                try:
+                    prefor = event.preferred_origin()
+                except:
+                    prefor = event.origins[0]
+            if etype is None:
+                _et = ''
+            elif etype == 'from_event_comments':
+                _et = ''
+                for _c in event.comments:
+                    if _c.text in ['eq','lf','su','px','uk']:
+                        _et = _c.text
+                        break
+            else:
+                _et = etype
+
+            # Get number of picks present
+            npicks = len(event.picks)
+            # Get number of unique NSLCs present
+            nslc_set = set([_p.waveform_id.id for _p in event.picks])
+            nnslc = len(nslc_set)
+            # Determine if template traces are aliased
+            has_aliased = False
+            for tr in _tmp.st:
+                if tr.id not in nslc_set:
+                    has_alised = True
+                    break
+            
+
+            # Get evaluation mode ("Status") of picks
+            pick_statuses = [_p.evaluation_mode for _p in event.picks]
+            if all(_s == 'automatic' for _s in pick_statuses):
+                pick_status = 'automatic'
+            elif all(_s == 'manual' for _s in pick_statuses):
+                pick_status = 'manual'
+            else:
+                pick_status = 'mixed'
+
+            if prefor.origin_uncertainty is None:
+                hu = np.nan
+            else:
+                hu = prefor.origin_uncertainty.horizontal_uncertainty
+
+            line = [
+                _et,
+                prefor.time,
+                prefor.longitude,
+                prefor.latitude,
+                prefor.depth,
+                prefor.depth_errors['uncertainty'],
+                hu,
+                npicks,
+                nnslc,
+                has_aliased,
+                pick_status,
+                event.resource_id.id,
+                prefor.resource_id.id] 
+            holder.append(line)
+        df_new = pd.DataFrame(holder, columns=[
+            'etype','time','longitude','latitude','depth',
+            'depth_uncertainty','horizontal_uncertainty',
+            'pick_count','channel_count','traces_aliased','pick_status',
+            'event_id','origin_id'],
+            index=[_tmp.name for _tmp in self])
+        
+        try:
+            self.clusters = self.clusters.join(df_new, how='left')
+        except:
+            return df_new
+
+        
+
+
+
 
 
     # # def get_summary(self):
