@@ -37,7 +37,7 @@ def distance_matrix(
         stream_list, shift_len=0.0,
         replace_nan_distances_with='mean',
         allow_individual_trace_shifts=True,
-        cores=1, progress_bar=True
+        cores=1, progress_bar=False
     ):
     """ :meth:`~eqcorrscan.utils.clustering.distance_matrix` with 
     a few additional safety catches added, inclusion of a tqdm progress
