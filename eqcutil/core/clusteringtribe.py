@@ -30,6 +30,8 @@ from eqcorrscan import Tribe, Template
 import eqcorrscan.utils.clustering as euc
 from eqcorrscan.core.match_filter.helpers import _safemembers, _par_read
 
+
+from eqcutil.process.template_info import get_template_pick_snrs
 from eqcutil.process.clustering import compute_pariwise_cross_correlations, cluster_correlated_templates
 from eqcutil.util.pandas import reindex_columns
 from eqcutil.viz import eqc_compat
@@ -153,13 +155,40 @@ class ClusteringTribe(Tribe):
 
     def add_template(self, other, rename_duplicates=False, **options):
         if isinstance(other, Template):
+            # If the new template is indexed in the clusters dataframe (i.e. it is present in the Clustering tribe)
             if other.name in self.clusters.index.values:
+                self_tmp = self[other.name]
+                # TODO: Probably obsolite this in favor of using resource_id ends as names
+                # If working with deduplicating names as TRUE
                 if rename_duplicates:
                     other.name = self._deduplicate_name(other.name, **options)
+                    self.templates.append(other)
+                    self.clusters = pd.concat(
+                        [self.clusters,
+                         pd.DataFrame({'id_no':len(self)-1}, index=[other.name])],
+                        axis=0, ignore_index=False)
+                    
+                # If event IDs are the same
+                elif self_tmp.event.resource_id == other.event.resource_id:
+                    # AND If there are new picks to add
+                    if not all(_p in self_tmp.event.picks for _p in other.event.picks):
+                        # add non-identical picks
+                        for _p in other.event.picks:
+                            if _p not in self.event.picks:
+                                self_tmp.event.picks.append(_p)
+                        # Get unique NSLC codes in this template
+                        self_nslc = set([tr.id for tr in self_tmp.st])
+                        # Add non-matching NSLC traces to the matching name template
+                        for tr in other.st:
+                            if tr.id not in self_nslc:
+                                self_tmp.st += tr
+                # If event IDs are different, but have the same name
                 else:
-                    raise AttributeError(f'duplicate name {other.name} - aborting add_template')
-            self.templates.append(other)
-            self.clusters = pd.concat([self.clusters, pd.DataFrame({'id_no':len(self)-1}, index=[other.name])],
+                    raise AttributeError(f'duplicate name {other.name} with mismatched event_id - aborting add_template')
+            # If the new template is truly new
+            else:
+                self.templates.append(other)
+                self.clusters = pd.concat([self.clusters, pd.DataFrame({'id_no':len(self)-1}, index=[other.name])],
                                       axis=0, ignore_index=False)
         else:
             raise TypeError('other must be type eqcorrscan.Template')
@@ -819,19 +848,24 @@ class ClusteringTribe(Tribe):
         return reindex_columns(self.clusters, group, ascending=ascending, inplace=True)
                 
         
-    def populate_event_metadata(self, preferred_origin=True, etype='from_event_comments'):
+    def populate_event_metadata(self, preferred_origin=True, etype='from_event_comments', prepick_scalar=0.9):
         holder = []
+        # Iterate across templates
         for _tmp in self:
+            # Get event
             event = _tmp.event
+            # Get preferred origin if specified
             if preferred_origin:
                 try:
                     prefor = event.preferred_origin()
                 except:
                     prefor = event.origins[0]
+            # Handle different options for etype
             if etype is None:
                 _et = ''
             elif etype == 'from_event_comments':
                 _et = ''
+                # Check comments for 2-character strings that match typical AQMS codes
                 for _c in event.comments:
                     if _c.text in ['eq','lf','su','px','uk']:
                         _et = _c.text
@@ -844,13 +878,20 @@ class ClusteringTribe(Tribe):
             # Get number of unique NSLCs present
             nslc_set = set([_p.waveform_id.id for _p in event.picks])
             nnslc = len(nslc_set)
+
             # Determine if template traces are aliased
             has_aliased = False
             for tr in _tmp.st:
                 if tr.id not in nslc_set:
-                    has_alised = True
+                    has_aliased = True
                     break
             
+            # Run SNR / RMS amplitude calculations - take means for multi-trace templates
+            df_snr = get_template_pick_snrs(_tmp, prepick_scalar=prepick_scalar)
+            snr = 10.*np.log10(df_snr.snr.mean())
+            noise_rms = df_snr.noise_rms.mean()
+            signal_rms = df_snr.signal_rms.mean()
+            full_rms = df_snr.full_trace_rms.mean()
 
             # Get evaluation mode ("Status") of picks
             pick_statuses = [_p.evaluation_mode for _p in event.picks]
@@ -876,6 +917,10 @@ class ClusteringTribe(Tribe):
                 hu,
                 npicks,
                 nnslc,
+                snr,
+                signal_rms,
+                noise_rms,
+                full_rms,
                 has_aliased,
                 pick_status,
                 event.resource_id.id,
@@ -884,7 +929,9 @@ class ClusteringTribe(Tribe):
         df_new = pd.DataFrame(holder, columns=[
             'etype','time','longitude','latitude','depth',
             'depth_uncertainty','horizontal_uncertainty',
-            'pick_count','channel_count','traces_aliased','pick_status',
+            'pick_count','channel_count',
+            'mean_snr_dB','mean_signal_rms','mean_noise_rms','mean_full_rms',
+            'traces_aliased','pick_status',
             'event_id','origin_id'],
             index=[_tmp.name for _tmp in self])
         
