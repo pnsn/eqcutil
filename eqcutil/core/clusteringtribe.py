@@ -12,7 +12,7 @@
     and perhaps this repository as well.
 
     TODO: provide an option to just save the paths to the source templates
-    TODO: change `self.metadata` to `self.index`
+    TODO: change `self.clusters` to `self.index`
     TODO: need an update_id_no method - incorporate into get_subset and remove
 """
 import os, logging, tarfile, shutil, pickle, tempfile, glob, fnmatch
@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, dendrogram
 from scipy.spatial.distance import squareform
 from obspy import read_events, read
-from obspy.geodetics import locations2degrees, degrees2kilometers
+# from obspy.geodetics import locations2degrees, degrees2kilometers
 from obspy.core.event import Catalog
 from eqcorrscan import Tribe, Template
 
@@ -73,10 +73,8 @@ class ClusteringTribe(Tribe):
         if not hasattr(self,'snuffle'):
             eqc_compat.plant()
 
-        self.metadata = pd.DataFrame(columns=['id_no'])
+        self.clusters = pd.DataFrame(columns=['id_no'])
         self.dist_mat = None
-        self.time_mat = None
-        self.corr_mat = None
         self.shift_mat = None
         self.cluster_kwargs = {}
 
@@ -123,9 +121,9 @@ class ClusteringTribe(Tribe):
     def __repr__(self, mode='clusters'):
         rstr = f'ClusteringTribe of {len(self.templates)} templates'
         if mode == 'clusters':
-            for col in self.metadata.columns:
+            for col in self.clusters.columns:
                 if 'cluster' in col:
-                    ngrps = len(self.metadata[col].unique())
+                    ngrps = len(self.clusters[col].unique())
                     if col == 'correlation_cluster':
                         istat = f'c_thresh: {self.cluster_kwargs[col]["corr_thresh"]}'
                     elif col in ['space_cluster', 'space_time_cluster']:
@@ -139,50 +137,35 @@ class ClusteringTribe(Tribe):
 
     # Shorthand for clusters
     def get_clusters(self):
-        return self.metadata
+        return self.clusters
     
     _c = property(get_clusters)
 
     def _deduplicate_name(self, other, delimiter='__', start=0):
-        if other not in self.metadata.index.values:
+        if other not in self.clusters.index.values:
             return other
         else:
             if delimiter not in other:
                 basename = other
             else:
                 basename = other.split('__')[0]
-            matches = fnmatch.filter(self.metadata.index.values, basename+'*')
+            matches = fnmatch.filter(self.clusters.index.values, basename+'*')
             while f'{basename}{delimiter}{start}' in matches:
                 start += 1
             return f'{basename}{delimiter}{start}'
 
-    def add_template(self, other):
-        simple_add = False
-        if not isinstance(other, Template):
-            raise TypeError
-        # If name is not duplicated
-        if other.name not in [tmp.name for tmp in self]:
-
-        if other.name in self.metadata.index.values:
-            simple_add = False
-
-        if simple_add:
-
-
-
-
     def add_template(self, other, rename_duplicates=False, **options):
         if isinstance(other, Template):
             # If the new template is indexed in the clusters dataframe (i.e. it is present in the Clustering tribe)
-            if other.name in self.metadata.index.values:
+            if other.name in self.clusters.index.values:
                 self_tmp = self[other.name]
                 # TODO: Probably obsolite this in favor of using resource_id ends as names
                 # If working with deduplicating names as TRUE
                 if rename_duplicates:
                     other.name = self._deduplicate_name(other.name, **options)
                     self.templates.append(other)
-                    self.metadata = pd.concat(
-                        [self.metadata,
+                    self.clusters = pd.concat(
+                        [self.clusters,
                          pd.DataFrame({'id_no':len(self)-1}, index=[other.name])],
                         axis=0, ignore_index=False)
                     
@@ -206,63 +189,14 @@ class ClusteringTribe(Tribe):
             # If the new template is truly new
             else:
                 self.templates.append(other)
-                # Add entry to metadata dataframe
-                self.metadata = pd.concat([self.metadata, pd.DataFrame({'id_no':len(self)-1}, index=[other.name])],
+                # Add entry to clusters dataframe
+                self.clusters = pd.concat([self.clusters, pd.DataFrame({'id_no':len(self)-1}, index=[other.name])],
                                       axis=0, ignore_index=False)
-                # Calculate new distances for this event and all other events
-                self.dist_mat = self.calc_distances()
-                self.time_mat = self.calc_difftimes()
                 
         else:
             raise TypeError('other must be type eqcorrscan.Template')
 
-    def get_origin_comp(self, param='loc'):
-        if param.lower() in ['distance','location','origin location','origin_location']:
-            param='distance'
-        elif param.lower() in ['time','origin time','origin_time']:
-            param='time'
-        elif param.lower() in ['origin']:
-            raise NotImplementedError('TODO: implement space_time_cluster')
-        else:
-            raise ValueError(f'{param} not supported')
-        # TODO: add functionality 
-        locs = self.metadata.id_no.values
-        # Get necessary scale for array
-        scale = np.max(locs)
-        # Add 1 for transition to length
-        new_array = np.full(shape=(scale + 1, scale + 1), fill_value=np.nan)
-        for _e, etemp in enumerate(self):
-            for _f, ftemp in enumerate(self):
-                ii = locs[_e]
-                jj = locs[_f]
-                if _e == _f:
-                    new_array[ii, jj] = 0.
-                elif _e < _f:
-                    # Calculate distance in degrees
-                    oe = etemp.event.preferred_origin()
-                    of = ftemp.event.preferred_origin()
-                    if param == 'distance':
-                        ddeg = locations2degrees(oe.latitude, oe.longitude, of.latitude, of.longitude)
-                        # Convert to kilometers
-                        _d = degrees2kilometers(ddeg)
-                    elif param == 'time':
-                        _d = np.abs(oe.time - of.time)
-                    else:
-                        raise NotImplementedError
-                    # Populate off-diagonal 
-                    new_array[ii, jj] = _d
-                    new_array[jj, ii] = _d
-        if param == 'distance':
-            self.dist_mat = new_array
-        elif param == 'time':
-            self.time_mat = new_array
-
-    def calc_difftimes(self):
-        self.get_origin_comp(param='time')
     
-    def calc_distances(self):
-        self.get_origin_comp(param='distance')
-
 
 
     def _get_template_list(self):
@@ -367,14 +301,14 @@ class ClusteringTribe(Tribe):
             raise ValueError(f'method {method} not supported.')
 
         self.cluster_kwargs.update({method: kwargs})
-        if self.metadata is None:
-            self.metadata = pd.DataFrame(data=values,columns=[method], index=index)
-        elif method not in self.metadata.columns:
-            self.metadata = pd.concat([self.metadata, pd.DataFrame({method: values}, index=index)],
+        if self.clusters is None:
+            self.clusters = pd.DataFrame(data=values,columns=[method], index=index)
+        elif method not in self.clusters.columns:
+            self.clusters = pd.concat([self.clusters, pd.DataFrame({method: values}, index=index)],
                                       axis=1, ignore_index=False)
         else:
             for _e, name in enumerate(index):
-                self.metadata.loc[name, method] = values[_e]
+                self.clusters.loc[name, method] = values[_e]
 
     def get_subset(self, names):
         """Get an arbitrary subset of templates based on a list
@@ -392,12 +326,12 @@ class ClusteringTribe(Tribe):
         if isinstance(names, str):
             names = [names]
         # Catch case where not all names are present
-        if not set(names) <= set(self.metadata.index.values):
+        if not set(names) <= set(self.clusters.index.values):
             raise ValueError('Not all provided names match templates in this ClusterTribe')
         # Proceed with making subset
         subset = self.__class__(templates = [self.select(name) for name in names])
         # Subset the clusters index
-        subset.clusters = self.metadata[self.metadata.index.isin(names)]
+        subset.clusters = self.clusters[self.clusters.index.isin(names)]
         subset.cluster_kwargs = self.cluster_kwargs
         # If there is a dist_mat, also subset that
         if self.dist_mat is not None:
@@ -436,11 +370,11 @@ class ClusteringTribe(Tribe):
          of this ClusteringTribe's contents for the specified method
          and index number
         """        
-        if self.metadata is None:
+        if self.clusters is None:
             return 
-        elif method not in self.metadata.columns:
+        elif method not in self.clusters.columns:
             self.logger.warning(f'cluster method {method} not yet run on this ClusteringTribe')
-        names = self.metadata[self.metadata[method] == index].index.values
+        names = self.clusters[self.clusters[method] == index].index.values
         return self.get_subset(names)
 
 
@@ -452,7 +386,7 @@ class ClusteringTribe(Tribe):
          - **Z** (*numpy.ndarray*) -- linkage matrix
         """        
         # Critical error if correlation clustering has not been run
-        if method not in self.metadata.columns:
+        if method not in self.clusters.columns:
             self.logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
         # Otherwise grab clustering kwargs as the default kwargs for `linkage`
         else:
@@ -494,7 +428,7 @@ class ClusteringTribe(Tribe):
         :return: _description_
         :rtype: _type_
         """        
-        if method not in self.metadata.columns:
+        if method not in self.clusters.columns:
             self.logger.critical(f'{method} has not been run on this ClusteringTribe')
         else:
             ckw = self.cluster_kwargs[method]
@@ -512,13 +446,13 @@ class ClusteringTribe(Tribe):
         if corr_thresh == ckw['corr_thresh']:
             if not inplace:
                 self.logger.info(f'Already grouped for corr_thresh={corr_thresh}')
-            return self.metadata[method]
+            return self.clusters[method]
         else:
             # Get new grouping
             indices = euc.fcluster(Z, t= 1 - corr_thresh, criterion='distance')
-            output = pd.Series(data=indices, index=self.metadata.index, name=method)
+            output = pd.Series(data=indices, index=self.clusters.index, name=method)
             if inplace:
-                self.metadata[method]=indices
+                self.clusters[method]=indices
                 ckw['corr_thresh'] = np.round(corr_thresh,decimals=prec)
             else:
                 return output
@@ -548,7 +482,7 @@ class ClusteringTribe(Tribe):
         :return: **R** (*dict*) -- output
         :rtype: _type_
         """        
-        if method not in self.metadata.columns:
+        if method not in self.clusters.columns:
             self.logger.critical(f'Clustering method "{method}" has not been run on this ClusteringTribe')
         
         lkwargs = {}
@@ -571,20 +505,20 @@ class ClusteringTribe(Tribe):
             
         xlvalues = None
         if isinstance(xlabels, str):
-            if xlabels in self.metadata.columns:
+            if xlabels in self.clusters.columns:
                 if scalar:
-                    xlvalues = self.metadata[xlabels].values*scalar
+                    xlvalues = self.clusters[xlabels].values*scalar
                 else:
-                    xlvalues = self.metadata[xlabels].values
+                    xlvalues = self.clusters[xlabels].values
                 
             elif xlabels == 'index':
-                xlvalues = self.metadata.index.values
+                xlvalues = self.clusters.index.values
 
         # Add list functionality
         elif isinstance(xlabels, list):
-            if all(_e in self.metadata.columns for _e in xlabels):
+            if all(_e in self.clusters.columns for _e in xlabels):
                 xlvalues = []
-                for idx, row in self.metadata[xlabels].iterrows():
+                for idx, row in self.clusters[xlabels].iterrows():
                     xlv = ''
                     for _e, value in enumerate(row.values):
                         if scalar[_e]:
@@ -698,7 +632,7 @@ class ClusteringTribe(Tribe):
                 os.path.join(dirname, '{0}.ms'.format(template.name)),
                 format='MSEED')
         # ADDED BY NTS - write clustering summary to disk
-        self.metadata.to_csv(os.path.join(dirname,'clusters.csv'), header=True, index=True)
+        self.clusters.to_csv(os.path.join(dirname,'clusters.csv'), header=True, index=True)
 
         # Write clustering kwargs to disk
         for _k, _v in self.cluster_kwargs.items():
@@ -819,10 +753,10 @@ class ClusteringTribe(Tribe):
             clusters = clusters[clusters.index.isin([_t.name for _t in templates])]
 
             if set(clusters.index.values) == {_t.name for _t in templates}:
-                if self.metadata is None:
-                    self.metadata = clusters
+                if self.clusters is None:
+                    self.clusters = clusters
                 else:
-                    self.metadata = pd.concat([self.metadata, clusters], axis=0, ignore_index=False)
+                    self.clusters = pd.concat([self.clusters, clusters], axis=0, ignore_index=False)
             else:
                 self.logger.error('cluster_group file names loaded do not match template names loaded')
 
@@ -903,8 +837,8 @@ class ClusteringTribe(Tribe):
         DEBUG: Need to re-index id_no before ending
         """        
         if template in self.templates:
-            # remove the template entry from self.metadata
-            self.metadata.drop(labels=template.name, inplace=True)
+            # remove the template entry from self.clusters
+            self.clusters.drop(labels=template.name, inplace=True)
             # remove the template
             Tribe.remove(self, template)
 
@@ -917,7 +851,7 @@ class ClusteringTribe(Tribe):
         :param ascending: Should group number get bigger with more members? Defaults to False
         :type ascending: bool, optional
         """        
-        return reindex_columns(self.metadata, group, ascending=ascending, inplace=True)
+        return reindex_columns(self.clusters, group, ascending=ascending, inplace=True)
                 
         
     def populate_event_metadata(self, preferred_origin=True, etype='from_event_comments', prepick_scalar=0.9):
@@ -1008,7 +942,7 @@ class ClusteringTribe(Tribe):
             index=[_tmp.name for _tmp in self])
         
         try:
-            self.metadata = self.metadata.join(df_new, how='left')
+            self.clusters = self.clusters.join(df_new, how='left')
         except:
             return df_new
 
@@ -1028,12 +962,12 @@ class ClusteringTribe(Tribe):
     # #     :rtype: _type_
     # #     """        
     # #     index = [_t.name for _t in self]
-    # #     columns = list(self.metadata.key())
+    # #     columns = list(self.clusters.key())
     # #     if len(columns) > 0:
     # #         data = np.full(shape=(len(index), len(columns)), fill_value=np.nan)
     # #     df = pd.DataFrame(data=data, index=index, columns=columns)
     # #     # Iterate over cluster type
-    # #     for ctype, cgroups in self.metadata.items():
+    # #     for ctype, cgroups in self.clusters.items():
     # #         # Iterate over subtribe number and subtribe
     # #         for _stn, tribe in cgroups.items():
     # #             # Iterate over template in tribe
@@ -1116,16 +1050,16 @@ class ClusteringTribe(Tribe):
     #         metric=metric,
     #         optimal_ordering=optimal_ordering)
     #     # Populate/re-initialize subtribes
-    #     self.metadata = {}
+    #     self.clusters = {}
     #     if savedir:
     #         subtribes = save_cluster_results(self, groups, savedir=savedir, save_subtribes=save_subtribes)
     #         for _k, _v in subtribes.items():
-    #             self.metadata.update({_k, self.__class__(templates=_v)})
+    #             self.clusters.update({_k, self.__class__(templates=_v)})
     #     else:
     #         for _e, group in groups:
-    #             self.metadata.update({_e: self.__class__()})
+    #             self.clusters.update({_e: self.__class__()})
     #             for entry in group:
-    #                 self.metadata[_e] += self.templates[entry[1]]
+    #                 self.clusters[_e] += self.templates[entry[1]]
     #     # Load the distance matrix into this 
     #     self.dist_mat = np.load(Path().cwd() / 'dist_mat.npy')
     #     self.clustering_threshold=corr_thresh
