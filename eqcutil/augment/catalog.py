@@ -1,6 +1,6 @@
 """
 :module: eqcorrscan_utils.catalog
-:auth: Nathan T. Stevens; Barret Johnson
+:auth: Nathan T. Stevens; Barrett Johnson
 :email: ntsteven@uw.edu; bnjo@wu.edu
 :org: Pacific Northwest Seismic Network
 :license: GNU GPLv3
