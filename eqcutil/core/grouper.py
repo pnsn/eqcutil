@@ -6,9 +6,16 @@ from eqcorrscan import Tribe, Template
 
 
 class Grouper(object):
-    def __init__(self, templates=[]):
-        self.events = defaultdict(Catalog)
-        self.streams = defaultdict(Stream)
+    """Rewrite of the EQcorrscan :class:`~eqcorrscan.Tribe` class intended
+    to better facilitate class-method based clustering/grouping routines
+    
+
+    :param object: _description_
+    :type object: _type_
+    """    
+    def __init__(self, wavebank_basepath, eventbank_basepath):
+        self.catalog = defaultdict(Catalog)
+        self.channels = defaultdict(Stream)
         self.index ={'name': defaultdict(dict), 
                      'trace': defaultdict(dict)}
         # Arrays (R3) - evid x evid x trace_id
@@ -151,3 +158,51 @@ class Grouper(object):
             for key in ['dist','dt','corr']:
 
             self.dist = pd.DataFrame()
+
+
+def get_origin_comp(self, param='loc'):
+        if param.lower() in ['distance','location','origin location','origin_location']:
+            param='distance'
+        elif param.lower() in ['time','origin time','origin_time']:
+            param='time'
+        elif param.lower() in ['origin']:
+            raise NotImplementedError('TODO: implement space_time_cluster')
+        else:
+            raise ValueError(f'{param} not supported')
+        # TODO: add functionality 
+        locs = self.clusters.id_no.values
+        # Get necessary scale for array
+        scale = np.max(locs)
+        # Add 1 for transition to length
+        new_array = np.full(shape=(scale + 1, scale + 1), fill_value=np.nan)
+        for _e, etemp in enumerate(self):
+            for _f, ftemp in enumerate(self):
+                ii = locs[_e]
+                jj = locs[_f]
+                if _e == _f:
+                    new_array[ii, jj] = 0.
+                elif _e < _f:
+                    # Calculate distance in degrees
+                    oe = etemp.event.preferred_origin()
+                    of = ftemp.event.preferred_origin()
+                    if param == 'distance':
+                        ddeg = locations2degrees(oe.latitude, oe.longitude, of.latitude, of.longitude)
+                        # Convert to kilometers
+                        _d = degrees2kilometers(ddeg)
+                    elif param == 'time':
+                        _d = np.abs(oe.time - of.time)
+                    else:
+                        raise NotImplementedError
+                    # Populate off-diagonal 
+                    new_array[ii, jj] = _d
+                    new_array[jj, ii] = _d
+        if param == 'distance':
+            self.dist_mat = new_array
+        elif param == 'time':
+            self.time_mat = new_array
+
+    def calc_difftimes(self):
+        self.get_origin_comp(param='time')
+    
+    def calc_distances(self):
+        self.get_origin_comp(param='distance')
