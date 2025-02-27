@@ -1,6 +1,8 @@
 # eqcutil
 Flexible methods that support use of the waveform cross correlation package "EQcorrscan" for a range of projects at the [PNSN](https://pnsn.org).
 
+a small, temporary, addition here
+
 # Authors  
 This repository is abstracted from workflows written by N. Stevens and B. Johnson in the course of their work at the [PNSN](https://pnsn.org) and related research endeavors.
 
