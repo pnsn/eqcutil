@@ -84,7 +84,6 @@ def model_picks(origin, inventory, model_name='P4', phases=['P','S']):
         # Get subset inventory for this specific stachan
         sta = nslc.split('.')[1]
         _inv = inventory.select(station=sta)
-        breakpoint()
         # Model raypaths for this station
         results = model_raypaths(model, origin, _inv, phases=phases)
         # If modelling does not produce arrivals
@@ -105,6 +104,7 @@ def model_picks(origin, inventory, model_name='P4', phases=['P','S']):
                 for ray in rays:
                     pick = ray2pick(ray, wfid, origin, method_str)
                     picks.append(pick)
+        breakpoint()
     return picks
 
 ## MODEL CONSTRUCTION METHODS ##
