@@ -104,7 +104,7 @@ def model_picks(origin, inventory, model_name='P4', phases=['P','S']):
                 for ray in rays:
                     pick = ray2pick(ray, wfid, origin, method_str)
                     picks.append(pick)
-        breakpoint()
+        
     return picks
 
 ## MODEL CONSTRUCTION METHODS ##
