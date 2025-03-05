@@ -77,26 +77,30 @@ def model_picks(origin, inventory, model_name='P4', phases=['P','S']):
         raise TypeError
     
     model = make_model(name=model_name)
-    results = model_raypaths(model, origin, inventory, phases=phases)
-    # If modelling does not produce arrivals
-    if results == []:
-        breakpoint()
     picks = []
-    # Convert rays to picks
-    for net in inventory.networks:
-        for sta in net.stations:
-            wfid = WaveformStreamID(
-                network_code=net.code,
-                station_code=sta.code,
-                location_code=sta.channels[0].location_code,
-                channel_code=sta.channels[0].code
-            )
-            method_str = f'smi:local/pyrocko/cake/{model_name}'
-            rays, e_offset, routing = results[f'{net.code}.{sta.code}']
-            method_str = f'{method_str}/{e_offset:.3f}/{routing}'
-            for ray in rays:
-                pick = ray2pick(ray, wfid, origin, method_str)
-                picks.append(pick)
+    for nslc in inventory.get_contents()['channels']:
+        sta = nslc.split('.')[1]
+        _inv = inventory.select(station=sta)
+        results = model_raypaths(model, origin, _inv, phases=phases)
+        # If modelling does not produce arrivals
+        if results == []:
+            breakpoint()
+    # picks = []
+        # Convert rays to picks
+        for net in _inv.networks:
+            for sta in net.stations:
+                wfid = WaveformStreamID(
+                    network_code=net.code,
+                    station_code=sta.code,
+                    location_code=sta.channels[0].location_code,
+                    channel_code=sta.channels[0].code
+                )
+                method_str = f'smi:local/pyrocko/cake/{model_name}'
+                rays, e_offset, routing = results[f'{net.code}.{sta.code}']
+                method_str = f'{method_str}/{e_offset:.3f}/{routing}'
+                for ray in rays:
+                    pick = ray2pick(ray, wfid, origin, method_str)
+                    picks.append(pick)
     return picks
 
 ## MODEL CONSTRUCTION METHODS ##
