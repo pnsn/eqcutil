@@ -75,17 +75,21 @@ def model_picks(origin, inventory, model_name='P4', phases=['P','S']):
             raise ValueError
     else:
         raise TypeError
-    
+    # Initialize velocity model object
     model = make_model(name=model_name)
+    # Create holder for picks
     picks = []
+    # Iterate across NSLC codes
     for nslc in inventory.get_contents()['channels']:
+        # Get subset inventory for this specific stachan
         sta = nslc.split('.')[1]
         _inv = inventory.select(station=sta)
+        breakpoint()
+        # Model raypaths for this station
         results = model_raypaths(model, origin, _inv, phases=phases)
         # If modelling does not produce arrivals
         if results == []:
             breakpoint()
-    # picks = []
         # Convert rays to picks
         for net in _inv.networks:
             for sta in net.stations:
