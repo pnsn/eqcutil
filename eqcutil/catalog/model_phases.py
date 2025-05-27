@@ -133,6 +133,9 @@ def get_pnsn_model(name='P4'):
         raise NotImplementedError(f'name "{name}" not supported. Options: P5, C4')
     return Vp, VpVs, Ztop
 
+# def get_pnsn_station_delays(name='P5', phase='P',  ):
+
+
 def create_1d_model(Vp, VpVs, Ztop, padding_meters=1e5):
     """Create a 1D layered velocity model with homogeneous velocity
     layers (i.e., velocity gradient is 0)
