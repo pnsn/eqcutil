@@ -12,9 +12,9 @@
     number of visible traces to the number of unique trace ID's
     present in either object's waveform data.
 """
-
-from obspy import Catalog, Stream, UTCDateTime
-from obspy.core.event import Pick, QuantityError, WaveformStreamID, ResourceIdentifier
+from collections import defaultdict
+from obspy import Catalog, Stream, UTCDateTime, read_inventory, Inventory
+from obspy.core.event import *
 from pyrocko import obspy_compat, model
 from pyrocko.gui.snuffler.marker import Marker, EventMarker, PhaseMarker
 
@@ -30,6 +30,19 @@ def plant():
     eqcorrscan.Template.snuffle = snuffle_template
 
 def pick_to_phase(pick, hash=None, kind=0):
+    """Convert an obspy Pick object into a Snuffler PhaseMarker object
+
+    :param pick: pick object
+    :type pick: obspy.core.event.Pick
+    :param hash: event hash to associate with this pick, defaults to None
+        This comes from Snuffler Event objects
+    :type hash: str, optional
+    :param kind: integer kind code (color) to assign this marker, defaults to 0
+        Accepted values: 0-6
+    :type kind: int, optional
+    :return: phase marker
+    :rtype: ~.PhaseMarker
+    """    
     if pick.evaluation_mode == 'automatic':
         automatic=True
     else:
@@ -60,7 +73,19 @@ def pick_to_phase(pick, hash=None, kind=0):
     return pmarker
 
 def phase_to_pick(phase):
-    if phase.automatic:
+    """Convert a Snuffler PhaseMarker to an obspy Pick object
+
+    If the phase marker stretches across a range of time
+    i.e., tmin < tmax, then the pick time is set as the
+    window-centered time and a time-error is attached to the
+    output pick object scaled to the half-width of the window
+
+    :param phase: phase marker
+    :type phase: ~.PhaseMarker
+    :return: pikc object
+    :rtype: obspy.core.event.Pick
+    """    
+    if hasattr(phase,'automatic'):
         evaluation_mode = 'automatic'
     else:
         evaluation_mode = 'manual'
@@ -86,38 +111,118 @@ def phase_to_pick(phase):
         )
     return pick
 
-def to_pyrocko_events_and_picks(catalog, altname=None, preferred=True):
+def to_pyrocko_events_and_picks(catalog, altnames=None):
+    """Convert an obspy Catalog object with picks and origins into 
+    lists of Snuffler Event objects, and EventMarkers and PhaseMarker objects
+    with the option to assign alternative names to each event.
+
+    :param catalog: event catalog with origins and picks
+        Should be only one origin per event, or events should have
+        their preferred_origin_id attribute set
+    :type catalog: obspy.core.event.Catalog
+    :param altnames: list of alternative names for each event in `catalog`, defaults to None
+    :type altnames: list-like, optional
+    :returns: 
+    - **events** (*list* of *~.Event*) - list of Snuffler Event objects
+    - **markers** (*list* of *~.PhaseMarker* and *~.EventMarker*) - list of Snuffler Event and Phase markers
+        that are associated
+    """    
     ocat = catalog
     if ocat is None:
         return None
     
     events = []
     markers = []
-    for oevent in ocat:
-        if preferred:
-            origs = [oevent.preferred_origin()]
+    for _e, oevent in enumerate(ocat):
+        orig = oevent.preferred_origin()
+        if orig is None:
+            orig = oevent.origins[0]
+       
+        if altnames is None:
+            name = f'{oevent.resource_id}'
         else:
-            origs = oevent.origins
-        for orig in origs:
-            if altname is None:
-                name = f'{oevent.resource_id}-{orig.resource_id}'
-            else:
-                name = altname
+            name = altnames[_e]
 
-            event = model.Event(name=name,
-                                time=orig.time.timestamp,
-                                lat=orig.latitude,
-                                lon=orig.longitude,
-                                depth=orig.depth,
-                                region=orig.region)
-            events.append(event)
-            emarker = EventMarker(event=event)
-            markers.append(emarker)
-            hash = emarker.get_event_hash()
-            for pick in oevent.picks:
-                phase = pick_to_phase(pick, hash=hash)
-                markers.append(phase)
+        event = model.Event(name=name,
+                            time=orig.time.timestamp,
+                            lat=orig.latitude,
+                            lon=orig.longitude,
+                            depth=orig.depth,
+                            region=orig.region)
+        events.append(event)
+        emarker = EventMarker(event=event)
+        markers.append(emarker)
+        hash = emarker.get_event_hash()
+        for pick in oevent.picks:
+            phase = pick_to_phase(pick, hash=hash)
+            markers.append(phase)
     return events, markers
+
+def snuffle_picked_catalog(st, catalog, altnames=None, inventory=None):
+    events, markers = to_pyrocko_events_and_picks(catalog, altnames=altnames)
+    if isinstance(inventory, str):
+        inv = read_inventory(inventory)
+    elif isinstance(inventory, Inventory):
+        inv = inventory
+    else:
+        inv = None
+    
+    nslc_set = set([tr.id for tr in st])
+
+    exit_code, marker_pile = st.snuffle(markers=markers, ntracks=len(nslc_set), inventory=inv)
+    return exit_code, marker_pile
+
+
+def markers_to_cat(markers):
+    cat = Catalog()
+    mdict = defaultdict(list)
+    for m in markers:
+        _hash = m.get_event_hash()
+        if _hash is None:
+            _hash = 'unassoc'
+        mdict[_hash].append(m)
+    
+    for _k, _v in mdict.items():
+        pmark = []
+        for _m in _v:
+            if isinstance(_m, EventMarker):
+                emark = _m
+                ev= _m.get_event()
+                origin = Origin(resource_id=ResourceIdentifier(id=f'smi:local/{_m.get_event_hash()}'),
+                                time=UTCDateTime(ev.time),
+                                latitude=ev.lat,
+                                longitude=ev.lon,
+                                depth=ev.depth)
+                if ev.name == 'Event':
+                    event = Event(resource_id=ResourceIdentifier(prefix='smi:local/new_event'))
+                else:
+                    event = Event(resource_id=ResourceIdentifier(id=ev.name))
+                event.origins.append(origin)
+                event.preferred_origin_id = origin.resource_id
+                
+            elif isinstance(_m, PhaseMarker):
+                pmark.append(_m)
+        
+        if _k == 'unassoc':
+            event = Event(resource_id=ResourceIdentifier(prefix='smi:local/unassociated'))
+
+        for p in pmark:
+            pick = phase_to_pick(p)
+            if _k != 'unassoc':
+                assoc = Arrival(pick_id=pick.resource_id, phase=p.get_phasename())
+                event.preferred_origin().arrivals.append(assoc)
+            event.picks.append(pick)
+
+        
+        cat.events.append(event)
+    return cat
+
+        
+
+        
+
+
+
 
 def snuffle_template(template, altname=None, **kwargs):
     """
